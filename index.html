@@ -3,24 +3,34 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TCG Pocket Clone</title>
+  <title>TCG Pocket Pro</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <h1>TCG Pocket Clone</h1>
+<div id="app">
 
-  <div class="tabs">
-    <button onclick="showTab('booster')">Booster</button>
-    <button onclick="showTab('collection')">Collection</button>
-    <button onclick="showTab('admin')">Admin</button>
-  </div>
+  <header>
+    <h1>TCG Pocket Pro</h1>
 
-  <div id="booster" class="tab"></div>
-  <div id="collection" class="tab hidden"></div>
-  <div id="admin" class="tab hidden"></div>
+    <nav>
+      <button onclick="go('booster')">Booster</button>
+      <button onclick="go('collection')">Collection</button>
+      <button onclick="go('admin')">Admin</button>
+    </nav>
+  </header>
 
-  <script src="script.js"></script>
+  <main>
+
+    <section id="booster" class="page"></section>
+    <section id="collection" class="page hidden"></section>
+    <section id="admin" class="page hidden"></section>
+
+  </main>
+
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>

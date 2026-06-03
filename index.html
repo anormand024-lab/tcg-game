@@ -2,349 +2,366 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>TCG Pocket Clone</title>
+<title>TCG Pocket V3</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body {
-    margin: 0;
-    font-family: Arial;
-    background: linear-gradient(180deg,#f7f7f7,#ffffff);
-    color: #111;
+body{
+margin:0;
+font-family:Arial;
+background:#f6f6f6;
 }
 
 /* HEADER */
-header {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    padding: 12px;
-    background: white;
-    border-bottom: 1px solid #ddd;
-    position: sticky;
-    top: 0;
+header{
+display:flex;
+justify-content:center;
+gap:10px;
+padding:10px;
+background:#fff;
+border-bottom:1px solid #ddd;
+position:sticky;
+top:0;
 }
 
-button {
-    padding: 10px 14px;
-    border: none;
-    background: #111;
-    color: white;
-    border-radius: 8px;
-    cursor: pointer;
+/* BUTTON */
+button{
+padding:10px 14px;
+border:none;
+border-radius:8px;
+background:#111;
+color:#fff;
+cursor:pointer;
 }
 
-button:hover {
-    opacity: 0.85;
+/* BOOSTER AREA */
+.pack{
+display:flex;
+justify-content:center;
+gap:10px;
+margin-top:30px;
+flex-wrap:wrap;
 }
 
-/* PAGES */
-.page { display:none; padding:20px; }
-.active { display:block; }
-
-/* BOOSTER */
-.booster-wrap {
-    text-align: center;
-    margin-top: 20px;
+.card{
+width:120px;
+height:170px;
+border-radius:12px;
+background:#222;
+color:white;
+display:flex;
+align-items:center;
+justify-content:center;
+position:relative;
+transform:scale(0.8);
+opacity:0;
+transition:0.4s;
 }
 
-.card-stage {
-    width: 260px;
-    height: 360px;
-    margin: 20px auto;
-    perspective: 1000px;
+.card.show{
+transform:scale(1);
+opacity:1;
 }
 
-.card {
-    width: 100%;
-    height: 100%;
-    border-radius: 16px;
-    transform-style: preserve-3d;
-    transition: transform 0.8s;
-    position: relative;
+.card-inner{
+position:absolute;
+width:100%;
+height:100%;
+transform-style:preserve-3d;
+transition:0.8s;
 }
 
-.card.flipped {
-    transform: rotateY(180deg);
+.card.flip{
+transform:rotateY(180deg);
 }
 
-.card-face {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden;
-    border-radius: 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+.face{
+position:absolute;
+width:100%;
+height:100%;
+backface-visibility:hidden;
+border-radius:12px;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
 }
 
-.front {
-    background: #111;
-    color: white;
+.back{
+background:#fff;
+color:#000;
+transform:rotateY(180deg);
+overflow:hidden;
 }
 
-.back {
-    background: white;
-    transform: rotateY(180deg);
-    border: 1px solid #ddd;
+.back img{
+width:100%;
+height:90px;
+object-fit:cover;
 }
 
-.back img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
+/* RARITY EFFECTS */
+.r5{
+box-shadow:0 0 15px orange;
+animation:shine 1.2s infinite;
 }
 
-.rarity {
-    font-weight: bold;
-    margin-top: 5px;
+.r6{
+box-shadow:0 0 20px gold;
+animation:sparkle 1s infinite;
 }
 
-/* rarity glow */
-.r1 { box-shadow: 0 0 10px #aaa; }
-.r2 { box-shadow: 0 0 12px #4caf50; }
-.r3 { box-shadow: 0 0 14px #2196f3; }
-.r4 { box-shadow: 0 0 16px #9c27b0; }
-.r5 { box-shadow: 0 0 18px #ff9800; }
-.r6 { box-shadow: 0 0 22px gold; }
+@keyframes shine{
+0%{filter:brightness(1)}
+50%{filter:brightness(1.6)}
+100%{filter:brightness(1)}
+}
+
+@keyframes sparkle{
+0%{transform:scale(1)}
+50%{transform:scale(1.05)}
+100%{transform:scale(1)}
+}
 
 /* COLLECTION */
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit,minmax(120px,1fr));
-    gap: 10px;
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,100px);
+gap:10px;
+padding:10px;
 }
 
-.smallCard {
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 8px;
-    text-align: center;
-    background: white;
+.small{
+background:#fff;
+border:1px solid #ddd;
+border-radius:10px;
+text-align:center;
+padding:5px;
 }
 
-.locked {
-    background: #eee;
-    color: #aaa;
+.locked{
+background:#eee;
+color:#aaa;
 }
 
 /* ADMIN */
-input, select {
-    padding: 8px;
-    margin: 5px;
+.adminCard{
+background:#fff;
+padding:10px;
+margin:10px;
+border-radius:10px;
+border:1px solid #ddd;
 }
 
-.adminCard {
-    border: 1px solid #ddd;
-    padding: 10px;
-    margin: 10px;
-}
 </style>
 </head>
 
 <body>
 
 <header>
-<button onclick="nav('booster')">Booster</button>
-<button onclick="nav('collection')">Collection</button>
-<button onclick="nav('admin')">Admin</button>
+<button onclick="nav('b')">Booster</button>
+<button onclick="nav('c')">Collection</button>
+<button onclick="nav('a')">Admin</button>
 </header>
 
 <!-- BOOSTER -->
-<div id="booster" class="page active">
-    <h2>Ouverture de booster</h2>
+<div id="b">
 
-    <button onclick="openBooster()">Ouvrir booster</button>
-    <p id="cooldown"></p>
+<button onclick="openPack()">Ouvrir booster</button>
+<p id="cd"></p>
 
-    <div class="booster-wrap">
-        <div class="card-stage">
-            <div id="card" class="card">
-                <div class="card-face front">CARTE</div>
+<div id="pack" class="pack"></div>
 
-                <div class="card-face back">
-                    <img id="img">
-                    <h3 id="name"></h3>
-                    <p id="info"></p>
-                </div>
-            </div>
-        </div>
-
-        <button onclick="prev()">◀</button>
-        <button onclick="next()">▶</button>
-    </div>
 </div>
 
 <!-- COLLECTION -->
-<div id="collection" class="page">
+<div id="c" style="display:none">
 <h2>Collection</h2>
 <div id="grid" class="grid"></div>
 </div>
 
 <!-- ADMIN -->
-<div id="admin" class="page">
+<div id="a" style="display:none">
 <h2>Admin</h2>
 
-<input id="n" placeholder="Nom"><br>
-<input id="i" placeholder="Index"><br>
+<input id="name" placeholder="Nom"><br>
+<input id="index" placeholder="Index"><br>
 
-<select id="r">
-    <option value="1">Rareté 1</option>
-    <option value="2">Rareté 2</option>
-    <option value="3">Rareté 3</option>
-    <option value="4">Rareté 4</option>
-    <option value="5">Rareté 5</option>
-    <option value="6">Rareté 6</option>
+<select id="rarity">
+<option value="1">R1</option>
+<option value="2">R2</option>
+<option value="3">R3</option>
+<option value="4">R4</option>
+<option value="5">R5</option>
+<option value="6">R6</option>
 </select><br>
 
-<input type="file" id="imgFile"><br>
+<input type="file" id="img"><br>
 
-<button onclick="add()">Ajouter carte</button>
+<button onclick="addCard()">Ajouter</button>
 
 <div id="list"></div>
+
 </div>
 
 <script>
 
+/* DATA */
 let cards = JSON.parse(localStorage.getItem("cards")||"[]");
 let col = JSON.parse(localStorage.getItem("col")||"{}");
-
-let booster = [];
-let idx = 0;
 let last = localStorage.getItem("last")||0;
 
+/* AUDIO */
+const openSnd = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-game-show-suspense-waiting-667.mp3");
+const rareSnd = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.wav");
+
 /* NAV */
-function nav(p){
-document.querySelectorAll(".page").forEach(e=>e.classList.remove("active"));
-document.getElementById(p).classList.add("active");
+function nav(x){
+document.getElementById("b").style.display = x=="b"?"block":"none";
+document.getElementById("c").style.display = x=="c"?"block":"none";
+document.getElementById("a").style.display = x=="a"?"block":"none";
 render();
-adminRender();
+admin();
 }
 
-/* RARETY DROP */
+/* ROLL */
 function roll(){
-let r = Math.random();
-if(r<0.50) return 1;
-if(r<0.75) return 2;
-if(r<0.88) return 3;
-if(r<0.95) return 4;
-if(r<0.99) return 5;
+let r=Math.random();
+if(r<0.5)return 1;
+if(r<0.75)return 2;
+if(r<0.88)return 3;
+if(r<0.95)return 4;
+if(r<0.99)return 5;
 return 6;
 }
 
-/* BOOSTER */
-function openBooster(){
+/* BOOSTER FIX */
+function openPack(){
 
-let now = Date.now();
-if(now - last < 20000){
-document.getElementById("cooldown").innerText =
-"Cooldown: " + Math.ceil((20000-(now-last))/1000)+"s";
+let now=Date.now();
+if(now-last<20000){
+document.getElementById("cd").innerText="Cooldown "+Math.ceil((20000-(now-last))/1000)+"s";
 return;
 }
 
-last = now;
+last=now;
 localStorage.setItem("last",last);
 
-booster = [];
+openSnd.play();
 
+let pack=document.getElementById("pack");
+pack.innerHTML="";
+
+let booster=[];
+
+/* FIX IMPORTANT BUG: cards bien filtrées */
 for(let i=0;i<5;i++){
-let rarity = roll();
-let pool = cards.filter(c=>c.r==rarity);
+let r=roll();
+let pool=cards.filter(c=>c.r==r);
 if(pool.length){
 booster.push(pool[Math.floor(Math.random()*pool.length)]);
 }
 }
 
-idx = 0;
-show(true);
-}
+/* DISPLAY 5 CARDS */
+booster.forEach((c,i)=>{
 
-/* ANIMATION */
-function show(anim=false){
+let div=document.createElement("div");
+div.className="card";
 
-let c = booster[idx];
-if(!c) return;
+div.innerHTML=`
+<div class="card-inner" id="ci${i}">
+<div class="face front">CARTE</div>
+<div class="face back ${"r"+c.r}">
+<img src="${c.img}">
+<h4>${c.n}</h4>
+<p>#${c.i}</p>
+</div>
+</div>
+`;
 
-let card = document.getElementById("card");
-card.classList.remove("flipped");
+pack.appendChild(div);
 
+/* ANIMATION SEQUENCE */
 setTimeout(()=>{
+div.classList.add("show");
+},i*200);
 
-document.getElementById("img").src = c.img;
-document.getElementById("name").innerText = c.n;
-document.getElementById("info").innerText =
-"#"+c.i+" | Rareté "+c.r;
+/* FLIP + REVEAL */
+setTimeout(()=>{
+document.getElementById("ci"+i).classList.add("flip");
 
-card.className = "card r"+c.r;
-
-card.classList.add("flipped");
-
+/* SAVE COLLECTION */
 col[c.i]=c;
 localStorage.setItem("col",JSON.stringify(col));
 
-},300);
+/* SOUND + EFFECT */
+if(c.r>=5){
+rareSnd.play();
+div.style.transform="scale(1.2)";
+div.style.filter="drop-shadow(0 0 10px gold)";
 }
 
-function next(){
-if(idx<booster.length-1){ idx++; show(); }
-}
+},600+i*400);
 
-function prev(){
-if(idx>0){ idx--; show(); }
+});
+
 }
 
 /* COLLECTION */
 function render(){
-let g = document.getElementById("grid");
+let g=document.getElementById("grid");
+if(!g) return;
 g.innerHTML="";
 
 cards.forEach(c=>{
-let owned = col[c.i];
 
-let div = document.createElement("div");
-div.className="smallCard "+(owned?"":"locked");
+let owned=col[c.i];
 
-div.innerHTML = owned ?
-`<img src="${c.img}" width="100%"><br>${c.n}` :
-`???`;
+let d=document.createElement("div");
+d.className="small "+(owned?"":"locked");
 
-g.appendChild(div);
+d.innerHTML=owned?
+`<img src="${c.img}" width="80"><br>${c.n}`:
+"???";
+
+g.appendChild(d);
 });
+
 }
 
-/* ADMIN FIX */
-function add(){
-let name = document.getElementById("n").value;
-let index = document.getElementById("i").value;
-let rarity = document.getElementById("r").value;
-let file = document.getElementById("imgFile").files[0];
+/* ADMIN FIX (IMPORTANT) */
+function addCard(){
+
+let n=document.getElementById("name").value;
+let i=document.getElementById("index").value;
+let r=parseInt(document.getElementById("rarity").value);
+let file=document.getElementById("img").files[0];
 
 if(!file) return;
 
-let fr = new FileReader();
-fr.onload = e=>{
+let fr=new FileReader();
+
+fr.onload=e=>{
 
 cards.push({
-n:name,
-i:index,
-r:parseInt(rarity),
+n,i,r,
 img:e.target.result
 });
 
 localStorage.setItem("cards",JSON.stringify(cards));
-adminRender();
+admin();
+
 };
 
 fr.readAsDataURL(file);
+
 }
 
-/* ADMIN LIST */
-function adminRender(){
+function admin(){
 let d=document.getElementById("list");
+if(!d) return;
+
 d.innerHTML="";
 
 cards.forEach((c,i)=>{
@@ -361,8 +378,10 @@ ${c.n} | R${c.r} | #${c.i}
 function del(i){
 cards.splice(i,1);
 localStorage.setItem("cards",JSON.stringify(cards));
-adminRender();
+admin();
 }
+
+nav("b");
 
 </script>
 

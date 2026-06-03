@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>AETHER CARDS — Booster Pack</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===================== CSS VARIABLES ===================== */
+:root {
+  --bg:         #0a0812;
+  --bg2:        #100e1a;
+  --surface:    #1a1628;
+  --surface2:   #231e35;
+  --border:     #2e2848;
+  --accent:     #c8a96e;
+  --accent2:    #e8c98e;
+  --text:       #e8e0f0;
+  --text-muted: #8880a8;
+  --gold:       #f0c060;
+  --purple:     #9b6fdf;
+  --teal:       #40c8b0;
+  --pink:       #e06090;
+
+  /* Rarities */
+  --common:     #8898b8;
+  --uncommon:   #50c878;
+  --rare:       #5080f0;
+  --epic:       #c060e0;
+  --legendary:  #f0a020;
+  --mythic:     linear-gradient(135deg,#ff6eb0,#c040e8,#4060ff,#00d4c8);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  user-select: none;
+}
+
+/* ===================== BACKGROUND ===================== */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 10%, rgba(155,111,223,.12) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 80% 90%, rgba(64,200,176,.08) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 50% at 50% 50%, rgba(200,169,110,.04) 0%, transparent 80%);
+  pointer-events:none;
+}
+
+/* Stars background */
+.stars { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+.star { position:absolute; background:#fff; border-radius:50%; animation:twinkle var(--dur,3s) ease-in-out infinite; animation-delay:var(--del,0s); opacity:0; }
+@keyframes twinkle { 0%,100%{opacity:0} 50%{opacity:var(--op,.6)} }
+
+/* ===================== LAYOUT ===================== */
+#app { position:relative; z-index:1; min-height:100vh; display:flex; flex-direction:column; }
+
+/* ===================== TOP BAR ===================== */
+.topbar {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 20px 10px;
+  border-bottom:1px solid var(--border);
+  background:rgba(10,8,18,.85);
+  backdrop-filter:blur(12px);
+  position:sticky; top:0; z-index:100;
+}
+.logo {
+  font-family:'Cinzel Decorative',serif;
+  font-size:1.15rem; font-weight:900;
+  background:linear-gradient(90deg,#c8a96e,#f0c060,#c8a96e);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  letter-spacing:.04em;
+}
+.logo span { font-size:.75em; display:block; letter-spacing:.12em; margin-top:-4px; color:var(--text-muted); -webkit-text-fill-color:var(--text-muted); }
+.credits-badge {
+  display:flex; align-items:center; gap:6px;
+  background:rgba(240,192,96,.12); border:1px solid rgba(240,192,96,.3);
+  border-radius:20px; padding:5px 12px;
+  font-size:.85rem; font-weight:700; color:var(--gold);
+}
+.credits-badge svg { width:16px; height:16px; }
+
+/* ===================== TABS ===================== */
+.tabs {
+  display:flex; border-bottom:1px solid var(--border);
+  background:rgba(10,8,18,.6); backdrop-filter:blur(8px);
+  position:sticky; top:60px; z-index:99;
+}
+.tab {
+  flex:1; padding:12px 8px; text-align:center;
+  font-family:'Cinzel',serif; font-size:.78rem; font-weight:600;
+  letter-spacing:.06em; color:var(--text-muted);
+  cursor:pointer; border:none; background:transparent;
+  border-bottom:3px solid transparent; transition:all .25s;
+  text-transform:uppercase;
+}
+.tab.active { color:var(--accent2); border-bottom-color:var(--accent); }
+.tab:hover:not(.active) { color:var(--text); }
+
+/* ===================== SCREENS ===================== */
+.screen { display:none; flex:1; flex-direction:column; }
+.screen.active { display:flex; }
+
+/* ===================== SHOP SCREEN ===================== */
+.shop-screen { align-items:center; padding:30px 16px 40px; gap:24px; }
+.shop-title {
+  font-family:'Cinzel Decorative',serif; font-size:1.4rem;
+  color:var(--accent2); text-align:center; text-shadow:0 0 30px rgba(200,169,110,.4);
+}
+.shop-title small { display:block; font-family:'Nunito',sans-serif; font-size:.7rem;
+  color:var(--text-muted); letter-spacing:.12em; margin-top:2px; text-transform:uppercase; font-weight:600; }
+
+.packs-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; width:100%; max-width:420px; }
+
+.pack-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:16px; padding:20px 14px; text-align:center;
+  cursor:pointer; transition:all .3s; position:relative; overflow:hidden;
+}
+.pack-card:hover { transform:translateY(-4px); border-color:var(--accent); box-shadow:0 8px 30px rgba(200,169,110,.2); }
+.pack-card::before {
+  content:''; position:absolute; inset:0; opacity:0; transition:opacity .3s;
+  background:radial-gradient(circle at 50% 50%, rgba(200,169,110,.08) 0%, transparent 70%);
+}
+.pack-card:hover::before { opacity:1; }
+
+.pack-icon { font-size:3rem; margin-bottom:8px; display:block; }
+.pack-name { font-family:'Cinzel',serif; font-size:.88rem; font-weight:600; color:var(--accent2); margin-bottom:4px; }
+.pack-desc { font-size:.7rem; color:var(--text-muted); margin-bottom:10px; line-height:1.4; }
+.pack-cost {
+  display:inline-flex; align-items:center; gap:4px;
+  background:rgba(240,192,96,.15); border:1px solid rgba(240,192,96,.3);
+  border-radius:20px; padding:4px 10px; font-size:.8rem; font-weight:700; color:var(--gold);
+}
+.pack-ribbon {
+  position:absolute; top:10px; right:-18px; background:var(--epic);
+  color:#fff; font-size:.6rem; font-weight:700; padding:2px 22px 2px 8px;
+  transform:rotate(0deg); letter-spacing:.08em;
+  box-shadow:0 2px 8px rgba(192,96,224,.4);
+  border-radius:2px 0 0 2px;
+}
+
+/* ===================== BOOSTER OPENING ===================== */
+.booster-screen {
+  align-items:center; justify-content:center;
+  position:relative; overflow:hidden;
+  padding:20px 16px 40px;
+}
+
+/* PACK SHAKE STATE */
+.pack-open-container {
+  display:flex; flex-direction:column; align-items:center;
+  gap:28px; width:100%;
+}
+.pack-visual {
+  width:180px; height:250px; position:relative; cursor:pointer;
+  transition:transform .15s;
+}
+.pack-visual:active { transform:scale(.96); }
+.pack-body {
+  width:100%; height:100%;
+  background:var(--pack-gradient, linear-gradient(135deg,#1a2040,#2a1040));
+  border-radius:16px; border:2px solid var(--pack-border, rgba(200,169,110,.4));
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:12px; position:relative; overflow:hidden;
+  box-shadow:0 8px 40px rgba(0,0,0,.6), 0 0 60px var(--pack-glow,rgba(200,169,110,.15));
+}
+.pack-body::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg, rgba(255,255,255,.06) 0%, transparent 50%);
+}
+.pack-emblem { font-size:4rem; }
+.pack-open-name { font-family:'Cinzel',serif; font-size:1rem; font-weight:600; color:var(--accent2); }
+.pack-stars { font-size:1.2rem; letter-spacing:4px; }
+
+.shake { animation:shakeAnim .5s ease-in-out; }
+@keyframes shakeAnim {
+  0%,100%{transform:rotate(0deg)} 20%{transform:rotate(-4deg)} 40%{transform:rotate(4deg)}
+  60%{transform:rotate(-3deg)} 80%{transform:rotate(3deg)}
+}
+
+.open-hint { font-size:.82rem; color:var(--text-muted); text-align:center; letter-spacing:.04em; }
+.open-hint strong { color:var(--accent); }
+.tap-count { font-family:'Cinzel',serif; font-size:2rem; color:var(--accent2); font-weight:700; }
+.tap-label { font-size:.72rem; color:var(--text-muted); letter-spacing:.1em; text-transform:uppercase; }
+
+/* PARTICLES */
+.particle-container { position:fixed; inset:0; pointer-events:none; z-index:200; }
+.particle {
+  position:absolute; border-radius:50%;
+  animation:particleFly 1.2s ease-out forwards;
+}
+@keyframes particleFly {
+  0%{transform:translate(0,0) scale(1); opacity:1}
+  100%{transform:translate(var(--dx),var(--dy)) scale(0); opacity:0}
+}
+
+/* ===================== CARD REVEAL ===================== */
+.reveal-overlay {
+  position:fixed; inset:0; z-index:300;
+  background:rgba(5,3,12,.97);
+  display:none; flex-direction:column; align-items:center; justify-content:center;
+  gap:20px; padding:20px;
+}
+.reveal-overlay.show { display:flex; }
+
+.card-stack-area { position:relative; width:220px; height:320px; }
+
+.reveal-card {
+  position:absolute; inset:0;
+  border-radius:18px; overflow:hidden;
+  cursor:pointer; touch-action:none;
+  transition:box-shadow .3s;
+  box-shadow:0 8px 40px rgba(0,0,0,.7);
+}
+
+/* Card design */
+.card-inner {
+  width:100%; height:100%;
+  display:flex; flex-direction:column;
+  position:relative; overflow:hidden;
+}
+.card-bg {
+  position:absolute; inset:0;
+  background:var(--card-bg, linear-gradient(135deg,#1a1628,#2a2040));
+}
+.card-shine {
+  position:absolute; inset:0; opacity:0;
+  background:linear-gradient(135deg,transparent 30%,rgba(255,255,255,.15) 50%,transparent 70%);
+  transition:opacity .3s;
+}
+.reveal-card.legendary .card-shine,
+.reveal-card.mythic .card-shine { opacity:1; animation:shineSweep 2s linear infinite; }
+@keyframes shineSweep {
+  0%{background-position:-200% 0} 100%{background-position:200% 0}
+}
+
+.card-frame {
+  position:relative; z-index:2;
+  width:100%; height:100%;
+  display:flex; flex-direction:column;
+  padding:10px 10px 8px;
+}
+.card-header { display:flex; justify-content:space-between; align-items:flex-start; }
+.card-name { font-family:'Cinzel',serif; font-size:.78rem; font-weight:600; color:#fff;
+  text-shadow:0 1px 3px rgba(0,0,0,.8); line-height:1.2; max-width:70%; }
+.card-cost-badge {
+  background:rgba(0,0,0,.5); border:1px solid rgba(255,255,255,.2);
+  border-radius:50%; width:26px; height:26px; display:flex; align-items:center; justify-content:center;
+  font-size:.72rem; font-weight:700; color:#fff;
+}
+.card-art-area {
+  flex:1; margin:6px 0; border-radius:10px; overflow:hidden;
+  background:rgba(0,0,0,.3); display:flex; align-items:center; justify-content:center;
+  font-size:5rem; border:1px solid rgba(255,255,255,.08);
+  position:relative;
+}
+.card-art-bg {
+  position:absolute; inset:0;
+  background:var(--art-bg, radial-gradient(circle,rgba(255,255,255,.05),transparent));
+}
+.card-emoji { position:relative; z-index:1; filter:drop-shadow(0 4px 12px rgba(0,0,0,.6)); }
+.card-type-bar {
+  background:rgba(0,0,0,.4); border-radius:6px; padding:3px 6px;
+  font-size:.6rem; letter-spacing:.08em; text-transform:uppercase;
+  color:rgba(255,255,255,.7); font-weight:700; text-align:center; margin:4px 0 2px;
+}
+.card-stats { display:flex; justify-content:space-between; margin-top:2px; }
+.stat {
+  display:flex; flex-direction:column; align-items:center;
+  background:rgba(0,0,0,.35); border-radius:6px; padding:3px 8px;
+  font-size:.6rem;
+}
+.stat-val { font-family:'Cinzel',serif; font-size:.85rem; font-weight:600; color:#fff; }
+.stat-lbl { font-size:.5rem; color:rgba(255,255,255,.5); letter-spacing:.06em; text-transform:uppercase; }
+.card-rarity-bar {
+  height:4px; border-radius:2px; margin-top:6px;
+  background:var(--rarity-color, var(--common));
+}
+.card-rarity-bar.mythic { background:var(--mythic); }
+
+/* Rarity border glows */
+.reveal-card.common  { box-shadow:0 4px 20px rgba(0,0,0,.8); }
+.reveal-card.uncommon { box-shadow:0 4px 30px rgba(80,200,120,.3); }
+.reveal-card.rare    { box-shadow:0 4px 30px rgba(80,128,240,.4); }
+.reveal-card.epic    { box-shadow:0 4px 40px rgba(192,96,224,.5); }
+.reveal-card.legendary { box-shadow:0 4px 50px rgba(240,160,32,.6), 0 0 80px rgba(240,192,64,.2); }
+.reveal-card.mythic  { box-shadow:0 4px 60px rgba(255,110,176,.6), 0 0 100px rgba(192,64,232,.3); animation:mythicPulse 2s ease-in-out infinite; }
+@keyframes mythicPulse { 0%,100%{box-shadow:0 4px 60px rgba(255,110,176,.6),0 0 100px rgba(192,64,232,.3)} 50%{box-shadow:0 4px 80px rgba(255,110,176,.9),0 0 140px rgba(64,96,255,.4)} }
+
+/* Swipe animations */
+.reveal-card.swipe-left  { animation:swipeLeft  .45s cubic-bezier(.4,0,.6,1) forwards; }
+.reveal-card.swipe-right { animation:swipeRight .45s cubic-bezier(.4,0,.6,1) forwards; }
+@keyframes swipeLeft  { to{transform:translateX(-130%) rotate(-18deg); opacity:0; } }
+@keyframes swipeRight { to{transform:translateX(130%)  rotate( 18deg); opacity:0; } }
+
+/* New card reveal */
+.new-badge {
+  position:absolute; top:8px; left:8px; z-index:10;
+  background:var(--gold); color:#000; font-family:'Cinzel',serif;
+  font-size:.55rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  border-radius:4px; padding:2px 6px;
+  animation:newPop .4s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes newPop { from{transform:scale(0) rotate(-10deg)} to{transform:scale(1) rotate(-6deg)} }
+
+/* Card entry animation */
+.reveal-card.entering { animation:cardEntry .5s cubic-bezier(.34,1.56,.64,1) forwards; }
+@keyframes cardEntry { from{transform:scale(.7) translateY(30px); opacity:0} to{transform:scale(1) translateY(0); opacity:1} }
+
+/* Rarity flash */
+.rarity-flash {
+  position:fixed; inset:0; z-index:290; pointer-events:none;
+  opacity:0; transition:opacity .15s;
+}
+.rarity-flash.show { opacity:1; }
+
+/* Bottom HUD */
+.reveal-hud { display:flex; flex-direction:column; align-items:center; gap:8px; }
+.rarity-label {
+  font-family:'Cinzel',serif; font-size:1rem; font-weight:600;
+  text-shadow:0 0 20px currentColor; letter-spacing:.06em;
+}
+.cards-counter { font-size:.8rem; color:var(--text-muted); letter-spacing:.06em; }
+.swipe-hint { font-size:.75rem; color:var(--text-muted); opacity:.7; }
+.swipe-arrows { font-size:1.4rem; letter-spacing:6px; opacity:.5; }
+
+/* ===================== COLLECTION SCREEN ===================== */
+.collection-screen { padding:16px 12px 40px; }
+.collection-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+.collection-title { font-family:'Cinzel',serif; font-size:1.1rem; color:var(--accent2); }
+.collection-stats { font-size:.75rem; color:var(--text-muted); text-align:right; line-height:1.5; }
+.collection-stats strong { color:var(--text); }
+
+.filter-bar { display:flex; gap:8px; margin-bottom:16px; overflow-x:auto; padding-bottom:4px; }
+.filter-bar::-webkit-scrollbar { height:3px; }
+.filter-bar::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+.filter-btn {
+  flex-shrink:0; padding:5px 12px; border-radius:20px; border:1px solid var(--border);
+  background:transparent; color:var(--text-muted); font-size:.72rem; font-weight:700;
+  cursor:pointer; transition:all .2s; letter-spacing:.04em; font-family:'Nunito',sans-serif;
+  text-transform:uppercase;
+}
+.filter-btn.active { color:#fff; border-color:currentColor; }
+.filter-btn.f-all.active   { background:rgba(200,169,110,.15); color:var(--accent); }
+.filter-btn.f-common.active   { background:rgba(136,152,184,.15); color:var(--common); }
+.filter-btn.f-uncommon.active { background:rgba(80,200,120,.15); color:var(--uncommon); }
+.filter-btn.f-rare.active  { background:rgba(80,128,240,.15); color:var(--rare); }
+.filter-btn.f-epic.active  { background:rgba(192,96,224,.15); color:var(--epic); }
+.filter-btn.f-legendary.active{ background:rgba(240,160,32,.15); color:var(--legendary); }
+.filter-btn.f-mythic.active{ background:rgba(255,64,128,.12); color:#ff6eb0; }
+
+.cards-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.grid-card {
+  border-radius:12px; overflow:hidden; cursor:pointer;
+  transition:transform .2s, box-shadow .2s;
+  position:relative; aspect-ratio:2.5/3.5;
+  background:var(--surface);
+}
+.grid-card:hover { transform:scale(1.04); }
+.grid-card.locked { filter:brightness(.25) saturate(.2); }
+.grid-card.locked::after {
+  content:'🔒'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:1.8rem; filter:brightness(3) saturate(0);
+}
+.grid-card .mini-card {
+  width:100%; height:100%;
+  display:flex; flex-direction:column; padding:6px 5px 5px;
+  position:relative; overflow:hidden;
+}
+.mini-bg { position:absolute; inset:0; }
+.mini-frame { position:relative; z-index:1; width:100%; height:100%; display:flex; flex-direction:column; }
+.mini-name { font-family:'Cinzel',serif; font-size:.5rem; font-weight:600; color:#fff;
+  text-shadow:0 1px 2px rgba(0,0,0,.9); margin-bottom:3px; }
+.mini-art { flex:1; display:flex; align-items:center; justify-content:center; font-size:2rem; }
+.mini-rarity-dot {
+  width:6px; height:6px; border-radius:50%;
+  background:var(--rarity-color);
+  align-self:flex-end;
+}
+.mini-rarity-dot.mythic { background:linear-gradient(135deg,#ff6eb0,#4060ff); }
+
+.owned-badge {
+  position:absolute; top:4px; right:4px; background:rgba(80,200,120,.8);
+  color:#fff; border-radius:50%; width:16px; height:16px;
+  display:flex; align-items:center; justify-content:center; font-size:.6rem;
+}
+.count-badge {
+  position:absolute; bottom:4px; left:4px;
+  background:rgba(0,0,0,.75); color:#fff;
+  border-radius:8px; padding:1px 5px; font-size:.6rem; font-weight:700;
+}
+
+/* RARITY RATES PANEL */
+.rates-panel {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:14px; padding:16px; margin-top:20px;
+}
+.rates-title { font-family:'Cinzel',serif; font-size:.9rem; color:var(--accent2); margin-bottom:12px; }
+.rate-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid rgba(255,255,255,.04); }
+.rate-row:last-child { border:none; }
+.rate-rarity { display:flex; align-items:center; gap:8px; font-size:.8rem; font-weight:600; }
+.rate-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.rate-pct { font-family:'Cinzel',serif; font-size:.85rem; }
+
+/* ===================== CARD DETAIL MODAL ===================== */
+.card-modal {
+  position:fixed; inset:0; z-index:400;
+  display:none; flex-direction:column; align-items:center; justify-content:center;
+  background:rgba(5,3,12,.95); padding:24px;
+  gap:20px;
+}
+.card-modal.show { display:flex; }
+.modal-card { width:260px; height:360px; position:relative; }
+.modal-close {
+  position:absolute; top:16px; right:16px;
+  background:var(--surface2); border:1px solid var(--border);
+  color:var(--text); border-radius:50%; width:36px; height:36px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.2rem; cursor:pointer; z-index:10;
+  transition:all .2s;
+}
+.modal-close:hover { background:var(--border); }
+.modal-info { text-align:center; }
+.modal-name { font-family:'Cinzel',serif; font-size:1.2rem; color:var(--accent2); }
+.modal-type { font-size:.75rem; color:var(--text-muted); letter-spacing:.1em; text-transform:uppercase; margin-top:4px; }
+.modal-flavour { font-size:.8rem; color:var(--text-muted); font-style:italic; margin-top:8px; max-width:260px; text-align:center; line-height:1.5; }
+
+/* ===================== TOAST ===================== */
+.toast {
+  position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:24px; padding:10px 20px;
+  font-size:.82rem; font-weight:600; color:var(--text);
+  opacity:0; transition:all .3s; z-index:500; white-space:nowrap;
+  pointer-events:none;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ===================== BUTTON ===================== */
+.btn-primary {
+  background:linear-gradient(135deg,#c8a96e,#f0c060);
+  color:#0a0812; border:none; border-radius:30px;
+  padding:12px 32px; font-family:'Cinzel',serif;
+  font-size:.9rem; font-weight:600; letter-spacing:.06em;
+  cursor:pointer; transition:all .2s;
+  box-shadow:0 4px 20px rgba(240,192,96,.3);
+}
+.btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(240,192,96,.4); }
+.btn-primary:active { transform:scale(.97); }
+.btn-secondary {
+  background:var(--surface2); border:1px solid var(--border);
+  color:var(--text); border-radius:30px; padding:10px 24px;
+  font-family:'Cinzel',serif; font-size:.82rem; font-weight:600;
+  letter-spacing:.04em; cursor:pointer; transition:all .2s;
+}
+.btn-secondary:hover { border-color:var(--accent); color:var(--accent2); }
+
+/* ===================== RESPONSIVE ===================== */
+@media(min-width:480px) {
+  .cards-grid { grid-template-columns:repeat(4,1fr); }
+  .packs-grid { grid-template-columns:repeat(3,1fr); }
+}
+@media(min-width:700px) {
+  .cards-grid { grid-template-columns:repeat(5,1fr); }
+}
+
+/* ===================== GLITTER EFFECT ===================== */
+.glitter { position:fixed; inset:0; pointer-events:none; z-index:200; }
+.glitter-piece {
+  position:absolute; width:4px; height:4px;
+  border-radius:50%; animation:glitterFall 1.5s ease-out forwards;
+}
+@keyframes glitterFall {
+  0%  { transform:translate(0,0) scale(1) rotate(0deg);   opacity:1; }
+  100%{ transform:translate(var(--gx),var(--gy)) scale(0) rotate(360deg); opacity:0; }
+}
+
+/* Lottie-style pack tear */
+.tear-overlay {
+  position:fixed; inset:0; z-index:250; pointer-events:none;
+  display:flex; align-items:center; justify-content:center;
+  opacity:0;
+}
+.tear-overlay.show { animation:tearAnim .6s ease-in-out forwards; }
+@keyframes tearAnim { 0%{opacity:0} 30%{opacity:1} 100%{opacity:0} }
+.tear-line { width:300px; height:3px; background:linear-gradient(90deg,transparent,#fff,transparent);
+  border-radius:2px; }
+
+/* ===================== COOLDOWN ===================== */
+.pack-card.on-cooldown { cursor:not-allowed; opacity:.75; }
+.pack-card.on-cooldown:hover { transform:none; box-shadow:none; border-color:var(--border); }
+.pack-card.on-cooldown::before { opacity:0 !important; }
+
+.cooldown-overlay {
+  position:absolute; inset:0; border-radius:16px;
+  background:rgba(5,3,12,.65);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:8px; z-index:5;
+}
+.cooldown-timer {
+  font-family:'Cinzel',serif; font-size:1.6rem; font-weight:700;
+  color:#fff; text-shadow:0 0 16px rgba(200,169,110,.6);
+}
+.cooldown-label {
+  font-size:.62rem; letter-spacing:.12em; text-transform:uppercase;
+  color:rgba(255,255,255,.5);
+}
+.cooldown-ring {
+  position:relative; width:64px; height:64px;
+}
+.cooldown-ring svg { transform:rotate(-90deg); }
+.cooldown-ring-bg { fill:none; stroke:rgba(255,255,255,.1); stroke-width:4; }
+.cooldown-ring-fill {
+  fill:none; stroke:var(--accent); stroke-width:4;
+  stroke-linecap:round;
+  stroke-dasharray:163; /* 2π×26 */
+  stroke-dashoffset:0;
+  transition:stroke-dashoffset .9s linear;
+}
+.cooldown-ring-text {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-family:'Cinzel',serif; font-size:.95rem; font-weight:700; color:#fff;
+}
+.pack-cost.free-badge {
+  background:rgba(80,200,120,.15); border-color:rgba(80,200,120,.35); color:#50c878;
+}
+
+</style>
+</head>
+<body>
+
+<!-- Stars -->
+<div class="stars" id="stars"></div>
+
+<!-- App -->
+<div id="app">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="logo">Aether Cards<span>COLLECTOR EDITION</span></div>
+    <div class="credits-badge" style="background:rgba(80,200,120,.12);border-color:rgba(80,200,120,.3);color:#50c878;">
+      <span style="font-size:1rem;">🎁</span>
+      <span>Gratuit</span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('shop')">🏪 Boutique</button>
+    <button class="tab" onclick="showTab('booster')">🎴 Booster</button>
+    <button class="tab" onclick="showTab('collection')">📖 Collection</button>
+  </div>
+
+  <!-- ===== SHOP SCREEN ===== -->
+  <div class="screen shop-screen active" id="screen-shop">
+    <div class="shop-title">Choisissez un Booster<small>Des créatures légendaires vous attendent</small></div>
+
+    <div class="packs-grid" id="packsGrid"></div>
+
+    <div class="rates-panel" style="max-width:420px;width:100%">
+      <div class="rates-title">⚗️ Taux de Drop</div>
+      <div id="ratesTable"></div>
+    </div>
+  </div>
+
+  <!-- ===== BOOSTER SCREEN ===== -->
+  <div class="screen booster-screen" id="screen-booster">
+    <div class="pack-open-container" id="packOpenContainer">
+      <div style="text-align:center">
+        <div class="tap-count" id="tapCount">0</div>
+        <div class="tap-label">Tapotements</div>
+      </div>
+      <div class="pack-visual" id="packVisual" onclick="tapPack()">
+        <div class="pack-body" id="packBody">
+          <span class="pack-emblem" id="packEmblem">✨</span>
+          <span class="pack-open-name" id="packOpenName">—</span>
+          <div class="pack-stars" id="packStars">★★★</div>
+        </div>
+      </div>
+      <div class="open-hint">Tapotez le booster <strong id="tapsLeft">5</strong> fois pour l'ouvrir</div>
+    </div>
+  </div>
+
+  <!-- ===== COLLECTION SCREEN ===== -->
+  <div class="screen collection-screen" id="screen-collection">
+    <div class="collection-header">
+      <div class="collection-title">📖 Ma Collection</div>
+      <div class="collection-stats" id="collectionStats"></div>
+    </div>
+    <div class="filter-bar" id="filterBar">
+      <button class="filter-btn f-all active" onclick="setFilter('all')">Tout</button>
+      <button class="filter-btn f-common"   onclick="setFilter('common')">Commun</button>
+      <button class="filter-btn f-uncommon" onclick="setFilter('uncommon')">Peu Commun</button>
+      <button class="filter-btn f-rare"     onclick="setFilter('rare')">Rare</button>
+      <button class="filter-btn f-epic"     onclick="setFilter('epic')">Épique</button>
+      <button class="filter-btn f-legendary" onclick="setFilter('legendary')">Légendaire</button>
+      <button class="filter-btn f-mythic"   onclick="setFilter('mythic')">Mythique</button>
+    </div>
+    <div class="cards-grid" id="cardsGrid"></div>
+  </div>
+
+</div>
+
+<!-- ===== REVEAL OVERLAY ===== -->
+<div class="reveal-overlay" id="revealOverlay">
+  <div style="text-align:center">
+    <div style="font-family:'Cinzel Decorative',serif;font-size:1.1rem;color:var(--accent2);letter-spacing:.04em">Votre Booster</div>
+    <div style="font-size:.75rem;color:var(--text-muted);margin-top:4px" id="revealPackName"></div>
+  </div>
+  <div class="card-stack-area" id="cardStackArea"></div>
+  <div class="reveal-hud">
+    <div class="rarity-label" id="rarityLabel"></div>
+    <div class="cards-counter" id="cardsCounter"></div>
+    <div class="swipe-arrows">← →</div>
+    <div class="swipe-hint">Glissez ou tapotez pour voir la carte suivante</div>
+  </div>
+</div>
+
+<!-- ===== RARITY FLASH ===== -->
+<div class="rarity-flash" id="rarityFlash"></div>
+
+<!-- ===== PARTICLES ===== -->
+<div class="particle-container" id="particleContainer"></div>
+<div class="glitter" id="glitterContainer"></div>
+<div class="tear-overlay" id="tearOverlay"><div class="tear-line"></div></div>
+
+<!-- ===== CARD MODAL ===== -->
+<div class="card-modal" id="cardModal" onclick="closeModal(event)">
+  <button class="modal-close" onclick="closeCardModal()">✕</button>
+  <div class="modal-card" id="modalCard"></div>
+  <div class="modal-info">
+    <div class="modal-name" id="modalName"></div>
+    <div class="modal-type" id="modalType"></div>
+    <div class="modal-flavour" id="modalFlavour"></div>
+  </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ====================================================
+   DATA
+   ==================================================== */
+
+const RARITIES = {
+  common:    { label:'Commun',     color:'var(--common)',   pct:55,  shine:false },
+  uncommon:  { label:'Peu Commun', color:'var(--uncommon)', pct:25,  shine:false },
+  rare:      { label:'Rare',       color:'var(--rare)',     pct:12,  shine:false },
+  epic:      { label:'Épique',     color:'var(--epic)',     pct:5,   shine:true  },
+  legendary: { label:'Légendaire', color:'var(--legendary)',pct:2.5, shine:true  },
+  mythic:    { label:'Mythique ✦', color:'#ff6eb0',         pct:.5,  shine:true  },
+};
+
+const CARD_DB = [
+  // COMMONS (10)
+  {id:1,name:'Lézard des Cendres',type:'Bestiale',rarity:'common',emoji:'🦎',atk:30,def:20,cost:2,
+   artBg:'radial-gradient(circle,#3a2010,#1a0808)',cardBg:'linear-gradient(135deg,#2a1810,#180808)',flavour:'Né des volcans oubliés, il crache des braises froides.'},
+  {id:2,name:'Sylphe Venteux',type:'Spirituelle',rarity:'common',emoji:'🌬️',atk:20,def:35,cost:1,
+   artBg:'radial-gradient(circle,#103040,#081828)',cardBg:'linear-gradient(135deg,#0e2030,#081018)',flavour:'Son souffle efface les chemins.'},
+  {id:3,name:'Golem de Pierre',type:'Arcanique',rarity:'common',emoji:'🪨',atk:40,def:50,cost:3,
+   artBg:'radial-gradient(circle,#2a2820,#181610)',cardBg:'linear-gradient(135deg,#201e18,#101008)',flavour:'Muet depuis des siècles, il obéit encore.'},
+  {id:4,name:'Nymphe des Mers',type:'Aquatique',rarity:'common',emoji:'🧜',atk:25,def:30,cost:2,
+   artBg:'radial-gradient(circle,#082838,#040818)',cardBg:'linear-gradient(135deg,#082030,#041018)',flavour:'Chante pour endormir les tempêtes.'},
+  {id:5,name:'Renard Fantôme',type:'Ombrale',rarity:'common',emoji:'🦊',atk:35,def:15,cost:2,
+   artBg:'radial-gradient(circle,#281830,#100818)',cardBg:'linear-gradient(135deg,#201028,#100818)',flavour:'On ne le voit qu\'au coucher du soleil.'},
+  {id:6,name:'Crabe Cristal',type:'Aquatique',rarity:'common',emoji:'🦀',atk:28,def:45,cost:2,
+   artBg:'radial-gradient(circle,#082840,#040c18)',cardBg:'linear-gradient(135deg,#082038,#040c18)',flavour:'Sa carapace reflète l\'avenir.'},
+  {id:7,name:'Scarabée Solaire',type:'Céleste',rarity:'common',emoji:'🪲',atk:22,def:22,cost:1,
+   artBg:'radial-gradient(circle,#3a2800,#181000)',cardBg:'linear-gradient(135deg,#2a2000,#140c00)',flavour:'Porteur de chance dans les déserts.'},
+  {id:8,name:'Loup Glacé',type:'Bestiale',rarity:'common',emoji:'🐺',atk:38,def:28,cost:2,
+   artBg:'radial-gradient(circle,#102030,#081020)',cardBg:'linear-gradient(135deg,#102028,#080c18)',flavour:'Sa morsure gèle le sang.'},
+  {id:9,name:'Mouche Aether',type:'Arcanique',rarity:'common',emoji:'🦋',atk:15,def:12,cost:1,
+   artBg:'radial-gradient(circle,#280838,#100018)',cardBg:'linear-gradient(135deg,#200830,#0c0018)',flavour:'Portail ambulant vers d\'autres plans.'},
+  {id:10,name:'Serpent Corail',type:'Aquatique',rarity:'common',emoji:'🐍',atk:32,def:18,cost:2,
+   artBg:'radial-gradient(circle,#200828,#0c0418)',cardBg:'linear-gradient(135deg,#180820,#0c0418)',flavour:'Son venin crée des illusions de beauté.'},
+
+  // UNCOMMONS (8)
+  {id:11,name:'Griffon des Vents',type:'Céleste',rarity:'uncommon',emoji:'🦅',atk:55,def:40,cost:3,
+   artBg:'radial-gradient(circle,#104020,#081810)',cardBg:'linear-gradient(135deg,#0c3018,#081010)',flavour:'Mi-aigle mi-lion, gardien des nuages.'},
+  {id:12,name:'Méduse Lunaire',type:'Aquatique',rarity:'uncommon',emoji:'🪼',atk:42,def:55,cost:3,
+   artBg:'radial-gradient(circle,#081838,#040828)',cardBg:'linear-gradient(135deg,#081030,#040820)',flavour:'Pulse au rythme des marées.'},
+  {id:13,name:'Ours de Lave',type:'Volcanique',rarity:'uncommon',emoji:'🐻',atk:65,def:48,cost:4,
+   artBg:'radial-gradient(circle,#402008,#200800)',cardBg:'linear-gradient(135deg,#301808,#180400)',flavour:'Hiberne dans les caldeiras.'},
+  {id:14,name:'Spectre Ambre',type:'Ombrale',rarity:'uncommon',emoji:'👻',atk:50,def:30,cost:3,
+   artBg:'radial-gradient(circle,#302808,#181400)',cardBg:'linear-gradient(135deg,#282008,#100c00)',flavour:'Piégé entre deux mondes.'},
+  {id:15,name:'Cerf Étoilé',type:'Céleste',rarity:'uncommon',emoji:'🦌',atk:45,def:58,cost:3,
+   artBg:'radial-gradient(circle,#101838,#080c28)',cardBg:'linear-gradient(135deg,#0c1430,#080a20)',flavour:'Ses bois cartographient le cosmos.'},
+  {id:16,name:'Araignée Toile',type:'Ombrale',rarity:'uncommon',emoji:'🕷️',atk:60,def:35,cost:3,
+   artBg:'radial-gradient(circle,#280838,#100018)',cardBg:'linear-gradient(135deg,#200830,#0c0020)',flavour:'Tisse des pièges entre les dimensions.'},
+  {id:17,name:'Phénix Juvenis',type:'Volcanique',rarity:'uncommon',emoji:'🕊️',atk:52,def:42,cost:3,
+   artBg:'radial-gradient(circle,#381808,#180800)',cardBg:'linear-gradient(135deg,#301008,#140400)',flavour:'Encore trop jeune pour brûler pleinement.'},
+  {id:18,name:'Tortue Céleste',type:'Arcanique',rarity:'uncommon',emoji:'🐢',atk:30,def:80,cost:3,
+   artBg:'radial-gradient(circle,#102038,#080c28)',cardBg:'linear-gradient(135deg,#0c1830,#080a20)',flavour:'Porte un cosmos sur son dos.'},
+
+  // RARES (6)
+  {id:19,name:'Drake du Vide',type:'Arcanique',rarity:'rare',emoji:'🐲',atk:85,def:65,cost:5,
+   artBg:'radial-gradient(circle,#180848,#080028)',cardBg:'linear-gradient(135deg,#100840,#060028)',flavour:'Issu du néant entre les étoiles.'},
+  {id:20,name:'Sorcier Éclipse',type:'Mystique',rarity:'rare',emoji:'🧙',atk:90,def:50,cost:5,
+   artBg:'radial-gradient(circle,#080838,#040028)',cardBg:'linear-gradient(135deg,#080830,#040020)',flavour:'Maîtrise le temps entre deux battements de cœur.'},
+  {id:21,name:'Valkyrie d\'Acier',type:'Céleste',rarity:'rare',emoji:'⚔️',atk:95,def:70,cost:5,
+   artBg:'radial-gradient(circle,#303040,#181830)',cardBg:'linear-gradient(135deg,#282838,#101020)',flavour:'Choisit les âmes dignes de l\'au-delà.'},
+  {id:22,name:'Titan des Marais',type:'Bestiale',rarity:'rare',emoji:'🐊',atk:80,def:90,cost:5,
+   artBg:'radial-gradient(circle,#103020,#040c08)',cardBg:'linear-gradient(135deg,#082818,#040c08)',flavour:'Aussi vieux que les premiers marécages.'},
+  {id:23,name:'Golem de Lumière',type:'Arcanique',rarity:'rare',emoji:'💎',atk:75,def:85,cost:5,
+   artBg:'radial-gradient(circle,#284048,#102030)',cardBg:'linear-gradient(135deg,#203840,#101828)',flavour:'Cristallisé sous la lumière d\'une étoile mourante.'},
+  {id:24,name:'Kitsune Ancien',type:'Spirituelle',rarity:'rare',emoji:'🦊',atk:88,def:72,cost:5,
+   artBg:'radial-gradient(circle,#381028,#180410)',cardBg:'linear-gradient(135deg,#300820,#14040c)',flavour:'Ses neuf queues contiennent neuf vies.'},
+
+  // EPICS (4)
+  {id:25,name:'Hydre Abyssale',type:'Aquatique',rarity:'epic',emoji:'🐉',atk:120,def:100,cost:6,
+   artBg:'radial-gradient(circle,#080840,#020018)',cardBg:'linear-gradient(135deg,#060838,#020018)',flavour:'Chaque tête détient un secret du monde.'},
+  {id:26,name:'Séraphin Noir',type:'Ombrale',rarity:'epic',emoji:'😈',atk:130,def:80,cost:6,
+   artBg:'radial-gradient(circle,#200848,#0c0028)',cardBg:'linear-gradient(135deg,#180840,#080020)',flavour:'Ange déchu porteur de vérités interdites.'},
+  {id:27,name:'Kraken Éternel',type:'Arcanique',rarity:'epic',emoji:'🦑',atk:110,def:120,cost:7,
+   artBg:'radial-gradient(circle,#041028,#020818)',cardBg:'linear-gradient(135deg,#040c20,#020810)',flavour:'Ses tentacules touchent tous les océans.'},
+  {id:28,name:'Reine des Cendres',type:'Volcanique',rarity:'epic',emoji:'👸',atk:125,def:95,cost:6,
+   artBg:'radial-gradient(circle,#401008,#200400)',cardBg:'linear-gradient(135deg,#380c08,#180400)',flavour:'Règne sur les ruines de civilisations oubliées.'},
+
+  // LEGENDARIES (3)
+  {id:29,name:'Léviathan Solaire',type:'Céleste',rarity:'legendary',emoji:'☀️',atk:160,def:130,cost:8,
+   artBg:'radial-gradient(circle,#402008,#201000)',cardBg:'linear-gradient(135deg,#382008,#180c00)',flavour:'Sa naissance déclencha la première aurore.'},
+  {id:30,name:'Esprit du Monde',type:'Mystique',rarity:'legendary',emoji:'🌍',atk:140,def:160,cost:8,
+   artBg:'radial-gradient(circle,#082038,#041028)',cardBg:'linear-gradient(135deg,#061830,#030c20)',flavour:'Il est ce qui existait avant tout et ce qui demeurera après.'},
+  {id:31,name:'Archimage Originel',type:'Arcanique',rarity:'legendary',emoji:'🔮',atk:155,def:145,cost:8,
+   artBg:'radial-gradient(circle,#180840,#080028)',cardBg:'linear-gradient(135deg,#100838,#060020)',flavour:'A écrit les premières lois de la magie.'},
+
+  // MYTHICS (2)
+  {id:32,name:'AETHER PRIME',type:'Cosmique',rarity:'mythic',emoji:'✨',atk:200,def:200,cost:10,
+   artBg:'radial-gradient(circle,#200840,#080020)',cardBg:'linear-gradient(135deg,#180838,#060018)',flavour:'L\'être fondamental. La source de tout éther. Ne peut être défait.'},
+  {id:33,name:'NÉANT ABSOLU',type:'Cosmique',rarity:'mythic',emoji:'🌑',atk:200,def:200,cost:10,
+   artBg:'radial-gradient(circle,#080808,#000000)',cardBg:'linear-gradient(135deg,#100810,#040004)',flavour:'Avant la lumière, il était. Après la lumière, il sera.'},
+];
+
+const PACKS = [
+  {id:'starter',name:'Booster Initié',emoji:'🌿',desc:'Parfait pour débuter. Cartes communes et peu communes.',
+   gradient:'linear-gradient(135deg,#0c2818,#1a4028)',border:'rgba(80,200,120,.4)',glow:'rgba(80,200,120,.15)',stars:'★★☆',
+   weights:{common:70,uncommon:25,rare:5,epic:0,legendary:0,mythic:0}},
+  {id:'arcane',name:'Booster Arcane',emoji:'🔮',desc:'Mystères et créatures rares vous attendent.',
+   gradient:'linear-gradient(135deg,#10082a,#20104a)',border:'rgba(130,80,240,.4)',glow:'rgba(130,80,240,.15)',stars:'★★★',
+   weights:{common:45,uncommon:30,rare:18,epic:6,legendary:.8,mythic:.2}},
+  {id:'inferno',name:'Booster Inferno',emoji:'🔥',desc:'Les plus puissantes créatures de feu.',
+   gradient:'linear-gradient(135deg,#2a0808,#481810)',border:'rgba(240,80,32,.4)',glow:'rgba(240,80,32,.15)',stars:'★★★',
+   weights:{common:40,uncommon:28,rare:20,epic:9,legendary:2.5,mythic:.5}},
+  {id:'aether',name:'Booster Aether',emoji:'🌌',desc:'Légendaires et mythiques à portée de main.',ribbon:'Rare!',
+   gradient:'linear-gradient(135deg,#080820,#180848)',border:'rgba(200,169,110,.5)',glow:'rgba(200,169,110,.25)',stars:'★★★',
+   weights:{common:25,uncommon:25,rare:28,epic:14,legendary:6,mythic:2}},
+];
+
+/* ====================================================
+   STATE
+   ==================================================== */
+const COOLDOWN_MS  = 20 * 1000; // 20 secondes
+let collection   = JSON.parse(localStorage.getItem('ac_collection') ?? '{}'); // {cardId: count}
+// cooldowns: {packId: timestampMS when cooldown expires}
+let cooldowns    = JSON.parse(localStorage.getItem('ac_cooldowns') ?? '{}');
+let currentPack  = null;
+let tapCount     = 0;
+const TAPS_REQUIRED = 5;
+
+let revealCards  = [];
+let revealIndex  = 0;
+let activeFilter = 'all';
+
+// Swipe state
+let touchStartX = 0;
+let touchStartY = 0;
+let isSwiping   = false;
+
+// Cooldown ticker interval
+let cooldownInterval = null;
+
+function save() {
+  localStorage.setItem('ac_collection', JSON.stringify(collection));
+  localStorage.setItem('ac_cooldowns',  JSON.stringify(cooldowns));
+}
+
+function getRemainingMs(packId) {
+  const expires = cooldowns[packId] || 0;
+  return Math.max(0, expires - Date.now());
+}
+function isOnCooldown(packId) { return getRemainingMs(packId) > 0; }
+
+/* ====================================================
+   STARS BACKGROUND
+   ==================================================== */
+(function buildStars() {
+  const c = document.getElementById('stars');
+  for(let i=0;i<120;i++) {
+    const s = document.createElement('div');
+    s.className='star';
+    s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;
+      width:${Math.random()*2.5+.5}px;height:${Math.random()*2.5+.5}px;
+      --dur:${2+Math.random()*4}s;--del:${Math.random()*6}s;--op:${.2+Math.random()*.8}`;
+    c.appendChild(s);
+  }
+})();
+
+/* ====================================================
+   TABS
+   ==================================================== */
+function showTab(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  const tabs = ['shop','booster','collection'];
+  document.querySelectorAll('.tab')[tabs.indexOf(id)].classList.add('active');
+  if(id==='collection') renderCollection();
+  if(id==='shop') renderShop();
+}
+
+/* ====================================================
+   SHOP
+   ==================================================== */
+function renderShop() {
+  renderPacksGrid();
+  startCooldownTicker();
+
+  const rates = document.getElementById('ratesTable');
+  rates.innerHTML = Object.entries(RARITIES).map(([k,r])=>`
+    <div class="rate-row">
+      <div class="rate-rarity">
+        <div class="rate-dot ${k==='mythic'?'mythic':''}" style="${k!=='mythic'?`background:${r.color}`:'background:linear-gradient(135deg,#ff6eb0,#4060ff)'}"></div>
+        <span style="color:${k==='mythic'?'#ff6eb0':r.color}">${r.label}</span>
+      </div>
+      <div class="rate-pct" style="color:${k==='mythic'?'#ff6eb0':r.color}">${r.pct}%</div>
+    </div>`).join('');
+}
+
+function renderPacksGrid() {
+  const grid = document.getElementById('packsGrid');
+  grid.innerHTML = PACKS.map(p => {
+    const rem   = getRemainingMs(p.id);
+    const onCD  = rem > 0;
+    const secs  = Math.ceil(rem / 1000);
+    const circ  = 163; // 2π×26
+    const dashOffset = onCD ? circ * (1 - rem / COOLDOWN_MS) : circ;
+    return `
+    <div class="pack-card ${onCD?'on-cooldown':''}" id="packcard-${p.id}" onclick="selectPack('${p.id}')">
+      ${p.ribbon&&!onCD?`<div class="pack-ribbon">${p.ribbon}</div>`:''}
+      ${onCD ? `
+      <div class="cooldown-overlay">
+        <div class="cooldown-ring">
+          <svg viewBox="0 0 56 56" width="64" height="64">
+            <circle class="cooldown-ring-bg" cx="28" cy="28" r="26"/>
+            <circle class="cooldown-ring-fill" id="ring-${p.id}" cx="28" cy="28" r="26"
+              stroke-dashoffset="${dashOffset}"/>
+          </svg>
+          <div class="cooldown-ring-text" id="cdtext-${p.id}">${secs}s</div>
+        </div>
+        <div class="cooldown-label">Recharge en cours</div>
+      </div>` : ''}
+      <span class="pack-icon">${p.emoji}</span>
+      <div class="pack-name">${p.name}</div>
+      <div class="pack-desc">${p.desc}</div>
+      <div class="pack-cost free-badge">🎁 Gratuit</div>
+    </div>`;
+  }).join('');
+}
+
+function startCooldownTicker() {
+  if(cooldownInterval) clearInterval(cooldownInterval);
+  cooldownInterval = setInterval(()=>{
+    let anyActive = false;
+    PACKS.forEach(p=>{
+      const rem = getRemainingMs(p.id);
+      const card = document.getElementById('packcard-'+p.id);
+      if(!card) return;
+      if(rem > 0) {
+        anyActive = true;
+        const secs = Math.ceil(rem/1000);
+        const circ = 163;
+        const offset = circ * (1 - rem / COOLDOWN_MS);
+        const txt  = document.getElementById('cdtext-'+p.id);
+        const ring = document.getElementById('ring-'+p.id);
+        if(txt)  txt.textContent  = secs+'s';
+        if(ring) ring.style.strokeDashoffset = offset;
+      } else if(card.classList.contains('on-cooldown')) {
+        // Cooldown just expired — re-render this card
+        renderPacksGrid();
+      }
+    });
+    if(!anyActive) { clearInterval(cooldownInterval); cooldownInterval = null; }
+  }, 250);
+}
+
+function selectPack(id) {
+  const pack = PACKS.find(p=>p.id===id);
+  if(!pack) return;
+  if(isOnCooldown(id)) {
+    const secs = Math.ceil(getRemainingMs(id)/1000);
+    showToast(`⏳ Disponible dans ${secs}s !`);
+    return;
+  }
+  currentPack = pack;
+  tapCount = 0;
+
+  // Start cooldown immediately
+  cooldowns[id] = Date.now() + COOLDOWN_MS;
+  save();
+  startCooldownTicker();
+
+  // Set pack visuals
+  document.getElementById('packBody').style.background = pack.gradient;
+  document.getElementById('packBody').style.setProperty('--pack-border', pack.border);
+  document.getElementById('packBody').style.borderColor = pack.border;
+  document.getElementById('packBody').style.boxShadow = `0 8px 40px rgba(0,0,0,.6), 0 0 60px ${pack.glow}`;
+  document.getElementById('packEmblem').textContent = pack.emoji;
+  document.getElementById('packOpenName').textContent = pack.name;
+  document.getElementById('packStars').textContent = pack.stars;
+  document.getElementById('tapCount').textContent = '0';
+  document.getElementById('tapsLeft').textContent = TAPS_REQUIRED;
+
+  showTab('booster');
+}
+
+/* ====================================================
+   TAP TO OPEN
+   ==================================================== */
+function tapPack() {
+  if(!currentPack) return;
+  tapCount++;
+  document.getElementById('tapCount').textContent = tapCount;
+  document.getElementById('tapsLeft').textContent = Math.max(0, TAPS_REQUIRED - tapCount);
+
+  // Shake
+  const v = document.getElementById('packVisual');
+  v.classList.remove('shake');
+  void v.offsetWidth;
+  v.classList.add('shake');
+
+  // Small particles
+  spawnParticles(3, v.getBoundingClientRect());
+
+  if(tapCount >= TAPS_REQUIRED) {
+    openBooster();
+  }
+}
+
+/* ====================================================
+   WEIGHTED RANDOM
+   ==================================================== */
+function rollCard(weights) {
+  const rand = Math.random() * 100;
+  let cum = 0;
+  for(const [rarity, weight] of Object.entries(weights)) {
+    cum += weight;
+    if(rand < cum) {
+      const pool = CARD_DB.filter(c=>c.rarity===rarity);
+      if(pool.length===0) continue;
+      return pool[Math.floor(Math.random()*pool.length)];
+    }
+  }
+  // fallback
+  return CARD_DB[0];
+}
+
+function generateBoosterCards(pack) {
+  const count = 5;
+  const cards = [];
+  for(let i=0;i<count;i++) {
+    cards.push(rollCard(pack.weights));
+  }
+  return cards;
+}
+
+/* ====================================================
+   OPEN BOOSTER
+   ==================================================== */
+function openBooster() {
+  if(!currentPack) return;
+
+  // Tear effect
+  const tear = document.getElementById('tearOverlay');
+  tear.classList.add('show');
+  setTimeout(()=>tear.classList.remove('show'), 700);
+
+  // Big particles
+  const packEl = document.getElementById('packVisual');
+  spawnParticles(20, packEl.getBoundingClientRect(), true);
+  spawnGlitter(packEl.getBoundingClientRect());
+
+  const cards = generateBoosterCards(currentPack);
+
+  // Add to collection
+  cards.forEach(card=>{
+    collection[card.id] = (collection[card.id]||0)+1;
+  });
+  save();
+
+  revealCards = cards;
+  revealIndex = 0;
+
+  document.getElementById('revealPackName').textContent = currentPack.name;
+
+  setTimeout(()=>{
+    document.getElementById('revealOverlay').classList.add('show');
+    showRevealCard(0);
+  }, 400);
+
+  // Reset for next pack
+  currentPack = null;
+  tapCount = 0;
+}
+
+/* ====================================================
+   CARD REVEAL
+   ==================================================== */
+function buildCardHTML(card, large=false) {
+  const r = RARITIES[card.rarity];
+  const isMyth = card.rarity==='mythic';
+  return `
+    <div class="card-bg" style="background:${card.cardBg}"></div>
+    <div class="card-shine"></div>
+    <div class="card-frame">
+      <div class="card-header">
+        <div class="card-name">${card.name}</div>
+        <div class="card-cost-badge">${card.cost}</div>
+      </div>
+      <div class="card-art-area">
+        <div class="card-art-bg" style="background:${card.artBg}"></div>
+        <div class="card-emoji">${card.emoji}</div>
+      </div>
+      <div class="card-type-bar">${card.type}</div>
+      <div class="card-stats">
+        <div class="stat"><span class="stat-val">${card.atk}</span><span class="stat-lbl">ATK</span></div>
+        <div class="stat"><span class="stat-val">${card.def}</span><span class="stat-lbl">DEF</span></div>
+        <div class="stat"><span class="stat-val">${card.cost}</span><span class="stat-lbl">COÛT</span></div>
+      </div>
+      <div class="card-rarity-bar ${isMyth?'mythic':''}" style="${isMyth?'':'background:'+r.color}"></div>
+    </div>
+  `;
+}
+
+function showRevealCard(idx) {
+  const area = document.getElementById('cardStackArea');
+  area.innerHTML = '';
+
+  const card = revealCards[idx];
+  const r = RARITIES[card.rarity];
+  const isNew = (collection[card.id]||0)===1;
+
+  // Rarity flash
+  const flash = document.getElementById('rarityFlash');
+  if(card.rarity==='legendary'||card.rarity==='mythic'||card.rarity==='epic') {
+    const colors = {epic:'rgba(192,96,224,.15)',legendary:'rgba(240,160,32,.2)',mythic:'rgba(255,64,128,.18)'};
+    flash.style.background = colors[card.rarity]||'transparent';
+    flash.classList.add('show');
+    setTimeout(()=>flash.classList.remove('show'),600);
+    if(card.rarity==='mythic'||card.rarity==='legendary') spawnGlitter({left:window.innerWidth/2,top:window.innerHeight/2,width:0,height:0});
+  }
+
+  const el = document.createElement('div');
+  el.className = `reveal-card ${card.rarity} entering`;
+  el.innerHTML = buildCardHTML(card);
+  if(isNew) {
+    const badge = document.createElement('div');
+    badge.className = 'new-badge';
+    badge.textContent = 'NOUVEAU';
+    el.appendChild(badge);
+  }
+  area.appendChild(el);
+
+  // HUD
+  const isMyth = card.rarity==='mythic';
+  document.getElementById('rarityLabel').textContent = r.label;
+  document.getElementById('rarityLabel').style.color = isMyth?'#ff6eb0':r.color;
+  document.getElementById('cardsCounter').textContent = `Carte ${idx+1} sur ${revealCards.length}`;
+
+  // Touch & click swipe
+  setupSwipe(el, idx);
+}
+
+function setupSwipe(el, idx) {
+  // Touch
+  el.addEventListener('touchstart', e=>{
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    isSwiping = true;
+  }, {passive:true});
+  el.addEventListener('touchend', e=>{
+    if(!isSwiping) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if(Math.abs(dx)>Math.abs(dy) && Math.abs(dx)>40) {
+      nextRevealCard(dx>0?'right':'left');
+    } else if(Math.abs(dx)<15 && Math.abs(dy)<15) {
+      nextRevealCard('right');
+    }
+    isSwiping = false;
+  }, {passive:true});
+  // Click (desktop)
+  el.addEventListener('click', ()=>nextRevealCard('right'));
+}
+
+function nextRevealCard(dir='right') {
+  const area = document.getElementById('cardStackArea');
+  const card = area.querySelector('.reveal-card');
+  if(!card) return;
+
+  card.classList.remove('entering');
+  card.classList.add(dir==='left'?'swipe-left':'swipe-right');
+
+  setTimeout(()=>{
+    revealIndex++;
+    if(revealIndex < revealCards.length) {
+      showRevealCard(revealIndex);
+    } else {
+      // All cards seen
+      document.getElementById('revealOverlay').classList.remove('show');
+      showToast('🎴 Cartes ajoutées à votre collection !');
+      showTab('collection');
+    }
+  }, 420);
+}
+
+/* ====================================================
+   COLLECTION
+   ==================================================== */
+function renderCollection() {
+  const owned = Object.keys(collection).filter(id=>collection[id]>0).length;
+  const total = CARD_DB.length;
+  document.getElementById('collectionStats').innerHTML =
+    `<strong>${owned}</strong> / ${total} cartes<br>${Object.values(collection).reduce((a,b)=>a+b,0)} total`;
+
+  const grid = document.getElementById('cardsGrid');
+  let cards = CARD_DB;
+  if(activeFilter!=='all') cards = cards.filter(c=>c.rarity===activeFilter);
+
+  grid.innerHTML = cards.map(card=>{
+    const count = collection[card.id]||0;
+    const locked = count===0;
+    const r = RARITIES[card.rarity];
+    const isMyth = card.rarity==='mythic';
+    return `
+      <div class="grid-card ${locked?'locked':''}" onclick="openCardDetail(${card.id})">
+        <div class="mini-card">
+          <div class="mini-bg" style="background:${card.cardBg}"></div>
+          <div class="mini-frame">
+            <div class="mini-name">${card.name}</div>
+            <div class="mini-art">${card.emoji}</div>
+            <div class="mini-rarity-dot ${isMyth?'mythic':''}" style="${isMyth?'':'background:'+r.color}"></div>
+          </div>
+        </div>
+        ${count>0?`<div class="owned-badge">✓</div>`:''}
+        ${count>1?`<div class="count-badge">×${count}</div>`:''}
+      </div>`;
+  }).join('');
+}
+
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.filter-btn.f-${f}`).classList.add('active');
+  renderCollection();
+}
+
+/* ====================================================
+   CARD DETAIL
+   ==================================================== */
+function openCardDetail(id) {
+  const card = CARD_DB.find(c=>c.id===id);
+  if(!card) return;
+  const count = collection[card.id]||0;
+  if(count===0) { showToast('🔒 Carte non débloquée'); return; }
+
+  const mc = document.getElementById('modalCard');
+  mc.innerHTML = `<div class="reveal-card ${card.rarity}" style="position:static;width:100%;height:100%">
+    ${buildCardHTML(card,true)}
+  </div>`;
+  document.getElementById('modalName').textContent = card.name;
+  document.getElementById('modalType').textContent = `${card.type} · ${RARITIES[card.rarity].label}${count>1?' · ×'+count:''}`;
+  document.getElementById('modalFlavour').textContent = card.flavour;
+  document.getElementById('cardModal').classList.add('show');
+}
+
+function closeModal(e) {
+  if(e.target===document.getElementById('cardModal')) closeCardModal();
+}
+function closeCardModal() {
+  document.getElementById('cardModal').classList.remove('show');
+}
+
+/* ====================================================
+   PARTICLES & EFFECTS
+   ==================================================== */
+function spawnParticles(n, rect, big=false) {
+  const c = document.getElementById('particleContainer');
+  const cx = rect.left + rect.width/2;
+  const cy = rect.top  + rect.height/2;
+  const colors = ['#f0c060','#c8a96e','#ff6eb0','#c040e8','#4060ff','#00d4c8','#50c878','#fff'];
+  for(let i=0;i<n;i++) {
+    const p = document.createElement('div');
+    const size = big ? (6+Math.random()*8) : (3+Math.random()*4);
+    const angle = Math.random()*Math.PI*2;
+    const dist  = big ? (80+Math.random()*120) : (30+Math.random()*50);
+    p.className = 'particle';
+    p.style.cssText = `
+      left:${cx}px;top:${cy}px;
+      width:${size}px;height:${size}px;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      --dx:${Math.cos(angle)*dist}px;--dy:${Math.sin(angle)*dist}px;
+      animation-duration:${0.8+Math.random()*.6}s;
+    `;
+    c.appendChild(p);
+    setTimeout(()=>p.remove(), 1400);
+  }
+}
+
+function spawnGlitter(rect) {
+  const c = document.getElementById('glitterContainer');
+  const cx = rect.left + rect.width/2;
+  const cy = rect.top  + rect.height/2;
+  const colors = ['#f0c060','#ff6eb0','#a0f0ff','#ffffff','#c040e8','#ffe080'];
+  for(let i=0;i<60;i++) {
+    const g = document.createElement('div');
+    g.className = 'glitter-piece';
+    const angle = Math.random()*Math.PI*2;
+    const dist  = 60+Math.random()*200;
+    g.style.cssText = `
+      left:${cx}px;top:${cy}px;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      width:${2+Math.random()*4}px;height:${2+Math.random()*4}px;
+      border-radius:${Math.random()>.5?'50%':'2px'};
+      --gx:${Math.cos(angle)*dist}px;--gy:${Math.sin(angle)*dist}px;
+      animation-duration:${1+Math.random()*.8}s;
+      animation-delay:${Math.random()*.2}s;
+    `;
+    c.appendChild(g);
+    setTimeout(()=>g.remove(),2000);
+  }
+}
+
+/* ====================================================
+   TOAST
+   ==================================================== */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+/* ====================================================
+   INIT
+   ==================================================== */
+renderShop();
+renderCollection();
+</script>
+</body>
+</html>

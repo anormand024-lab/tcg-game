@@ -1,0 +1,50 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #0f0f0f;
+  color: white;
+  text-align: center;
+  margin: 0;
+}
+
+.menu {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+}
+
+button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* COLLECTION GRID */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 10px;
+}
+
+.card {
+  background: #222;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.count {
+  display: block;
+  margin-top: 5px;
+  color: gold;
+  font-weight: bold;
+}
+
+.locked {
+  opacity: 0.3;
+}
+
+.owned {
+  border: 2px solid #3b82f6;
+}

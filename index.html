@@ -2,76 +2,146 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>TCG Booster Game</title>
+<title>TCG Pocket Clone</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body {
-    font-family: Arial;
     margin: 0;
-    background: white;
+    font-family: Arial;
+    background: linear-gradient(180deg,#f7f7f7,#ffffff);
     color: #111;
 }
 
+/* HEADER */
 header {
     display: flex;
-    justify-content: space-around;
-    padding: 10px;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px;
+    background: white;
     border-bottom: 1px solid #ddd;
+    position: sticky;
+    top: 0;
 }
 
 button {
-    padding: 10px;
-    border: 1px solid #ccc;
-    background: white;
+    padding: 10px 14px;
+    border: none;
+    background: #111;
+    color: white;
+    border-radius: 8px;
     cursor: pointer;
 }
 
 button:hover {
-    background: #f0f0f0;
+    opacity: 0.85;
 }
 
-.page {
-    display: none;
-    padding: 20px;
+/* PAGES */
+.page { display:none; padding:20px; }
+.active { display:block; }
+
+/* BOOSTER */
+.booster-wrap {
+    text-align: center;
+    margin-top: 20px;
 }
 
-.active {
-    display: block;
+.card-stage {
+    width: 260px;
+    height: 360px;
+    margin: 20px auto;
+    perspective: 1000px;
 }
 
 .card {
-    width: 200px;
-    border: 1px solid #ddd;
-    padding: 10px;
-    margin: 10px;
-    text-align: center;
+    width: 100%;
+    height: 100%;
+    border-radius: 16px;
+    transform-style: preserve-3d;
+    transition: transform 0.8s;
+    position: relative;
 }
 
-.card img {
+.card.flipped {
+    transform: rotateY(180deg);
+}
+
+.card-face {
+    position: absolute;
     width: 100%;
-    height: 140px;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.front {
+    background: #111;
+    color: white;
+}
+
+.back {
+    background: white;
+    transform: rotateY(180deg);
+    border: 1px solid #ddd;
+}
+
+.back img {
+    width: 100%;
+    height: 200px;
     object-fit: cover;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+}
+
+.rarity {
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+/* rarity glow */
+.r1 { box-shadow: 0 0 10px #aaa; }
+.r2 { box-shadow: 0 0 12px #4caf50; }
+.r3 { box-shadow: 0 0 14px #2196f3; }
+.r4 { box-shadow: 0 0 16px #9c27b0; }
+.r5 { box-shadow: 0 0 18px #ff9800; }
+.r6 { box-shadow: 0 0 22px gold; }
+
+/* COLLECTION */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(120px,1fr));
+    gap: 10px;
+}
+
+.smallCard {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 8px;
+    text-align: center;
+    background: white;
 }
 
 .locked {
     background: #eee;
-    color: #999;
+    color: #aaa;
 }
 
-.booster-container {
-    text-align: center;
+/* ADMIN */
+input, select {
+    padding: 8px;
+    margin: 5px;
 }
 
-.swipe-box {
-    width: 220px;
-    margin: auto;
-    border: 1px solid #ccc;
+.adminCard {
+    border: 1px solid #ddd;
     padding: 10px;
-}
-
-.hidden {
-    display: none;
+    margin: 10px;
 }
 </style>
 </head>
@@ -79,198 +149,221 @@ button:hover {
 <body>
 
 <header>
-<button onclick="showPage('booster')">Booster</button>
-<button onclick="showPage('collection')">Collection</button>
-<button onclick="showPage('admin')">Admin</button>
+<button onclick="nav('booster')">Booster</button>
+<button onclick="nav('collection')">Collection</button>
+<button onclick="nav('admin')">Admin</button>
 </header>
 
 <!-- BOOSTER -->
 <div id="booster" class="page active">
     <h2>Ouverture de booster</h2>
-    <button onclick="openBooster()">Ouvrir un booster</button>
-    <p id="cooldownText"></p>
 
-    <div id="boosterView" class="swipe-box hidden">
-        <img id="bImg" width="200">
-        <h3 id="bName"></h3>
-        <p id="bInfo"></p>
-        <button onclick="prevCard()">◀</button>
-        <button onclick="nextCard()">▶</button>
+    <button onclick="openBooster()">Ouvrir booster</button>
+    <p id="cooldown"></p>
+
+    <div class="booster-wrap">
+        <div class="card-stage">
+            <div id="card" class="card">
+                <div class="card-face front">CARTE</div>
+
+                <div class="card-face back">
+                    <img id="img">
+                    <h3 id="name"></h3>
+                    <p id="info"></p>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="prev()">◀</button>
+        <button onclick="next()">▶</button>
     </div>
 </div>
 
 <!-- COLLECTION -->
 <div id="collection" class="page">
-    <h2>Collection</h2>
-    <div id="collectionGrid"></div>
+<h2>Collection</h2>
+<div id="grid" class="grid"></div>
 </div>
 
 <!-- ADMIN -->
 <div id="admin" class="page">
-    <h2>Admin - Gestion cartes</h2>
+<h2>Admin</h2>
 
-    <input id="cardName" placeholder="Nom"><br><br>
-    <input id="cardIndex" placeholder="Index collection"><br><br>
-    <input id="cardRarity" type="number" min="1" max="6" placeholder="Rareté (1-6)"><br><br>
-    <input type="file" id="cardImage"><br><br>
+<input id="n" placeholder="Nom"><br>
+<input id="i" placeholder="Index"><br>
 
-    <button onclick="addCard()">Ajouter carte</button>
+<select id="r">
+    <option value="1">Rareté 1</option>
+    <option value="2">Rareté 2</option>
+    <option value="3">Rareté 3</option>
+    <option value="4">Rareté 4</option>
+    <option value="5">Rareté 5</option>
+    <option value="6">Rareté 6</option>
+</select><br>
 
-    <h3>Cartes existantes</h3>
-    <div id="adminList"></div>
+<input type="file" id="imgFile"><br>
+
+<button onclick="add()">Ajouter carte</button>
+
+<div id="list"></div>
 </div>
 
 <script>
-/* ---------------- STORAGE ---------------- */
-let cards = JSON.parse(localStorage.getItem("cards")) || [];
-let collection = JSON.parse(localStorage.getItem("collection")) || {};
-let lastBoost = localStorage.getItem("lastBoost") || 0;
 
-/* ---------------- NAV ---------------- */
-function showPage(id){
-    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
-    renderCollection();
-    renderAdmin();
+let cards = JSON.parse(localStorage.getItem("cards")||"[]");
+let col = JSON.parse(localStorage.getItem("col")||"{}");
+
+let booster = [];
+let idx = 0;
+let last = localStorage.getItem("last")||0;
+
+/* NAV */
+function nav(p){
+document.querySelectorAll(".page").forEach(e=>e.classList.remove("active"));
+document.getElementById(p).classList.add("active");
+render();
+adminRender();
 }
 
-/* ---------------- BOOSTER ---------------- */
-let currentBooster = [];
-let index = 0;
-
-function rarityRoll(){
-    let r = Math.random();
-    if(r < 0.5) return 1;
-    if(r < 0.75) return 2;
-    if(r < 0.88) return 3;
-    if(r < 0.95) return 4;
-    if(r < 0.99) return 5;
-    return 6;
+/* RARETY DROP */
+function roll(){
+let r = Math.random();
+if(r<0.50) return 1;
+if(r<0.75) return 2;
+if(r<0.88) return 3;
+if(r<0.95) return 4;
+if(r<0.99) return 5;
+return 6;
 }
 
+/* BOOSTER */
 function openBooster(){
-    let now = Date.now();
-    if(now - lastBoost < 20000){
-        document.getElementById("cooldownText").innerText =
-        "Cooldown actif: " + Math.ceil((20000 - (now - lastBoost))/1000) + "s";
-        return;
-    }
 
-    lastBoost = now;
-    localStorage.setItem("lastBoost", lastBoost);
-
-    currentBooster = [];
-
-    for(let i=0;i<5;i++){
-        let rarity = rarityRoll();
-        let pool = cards.filter(c => c.rarity == rarity);
-        if(pool.length > 0){
-            currentBooster.push(pool[Math.floor(Math.random()*pool.length)]);
-        }
-    }
-
-    index = 0;
-    showCard();
-    document.getElementById("boosterView").classList.remove("hidden");
+let now = Date.now();
+if(now - last < 20000){
+document.getElementById("cooldown").innerText =
+"Cooldown: " + Math.ceil((20000-(now-last))/1000)+"s";
+return;
 }
 
-function showCard(){
-    let c = currentBooster[index];
-    if(!c) return;
+last = now;
+localStorage.setItem("last",last);
 
-    document.getElementById("bImg").src = c.image;
-    document.getElementById("bName").innerText = c.name;
-    document.getElementById("bInfo").innerText =
-        "Rareté: " + c.rarity + " | Index: " + c.index;
+booster = [];
 
-    collection[c.index] = c;
-    localStorage.setItem("collection", JSON.stringify(collection));
+for(let i=0;i<5;i++){
+let rarity = roll();
+let pool = cards.filter(c=>c.r==rarity);
+if(pool.length){
+booster.push(pool[Math.floor(Math.random()*pool.length)]);
+}
 }
 
-function nextCard(){
-    if(index < currentBooster.length - 1){
-        index++;
-        showCard();
-    }
+idx = 0;
+show(true);
 }
 
-function prevCard(){
-    if(index > 0){
-        index--;
-        showCard();
-    }
+/* ANIMATION */
+function show(anim=false){
+
+let c = booster[idx];
+if(!c) return;
+
+let card = document.getElementById("card");
+card.classList.remove("flipped");
+
+setTimeout(()=>{
+
+document.getElementById("img").src = c.img;
+document.getElementById("name").innerText = c.n;
+document.getElementById("info").innerText =
+"#"+c.i+" | Rareté "+c.r;
+
+card.className = "card r"+c.r;
+
+card.classList.add("flipped");
+
+col[c.i]=c;
+localStorage.setItem("col",JSON.stringify(col));
+
+},300);
 }
 
-/* ---------------- COLLECTION ---------------- */
-function renderCollection(){
-    let div = document.getElementById("collectionGrid");
-    div.innerHTML = "";
-
-    cards.forEach(c => {
-        let owned = collection[c.index];
-
-        let el = document.createElement("div");
-        el.className = "card";
-
-        if(owned){
-            el.innerHTML = `
-                <img src="${c.image}">
-                <h4>${c.name}</h4>
-                <p>Rareté ${c.rarity}</p>
-                <p>#${c.index}</p>
-            `;
-        } else {
-            el.classList.add("locked");
-            el.innerHTML = "<h3>???</h3>";
-        }
-
-        div.appendChild(el);
-    });
+function next(){
+if(idx<booster.length-1){ idx++; show(); }
 }
 
-/* ---------------- ADMIN ---------------- */
-function addCard(){
-    let name = document.getElementById("cardName").value;
-    let index = document.getElementById("cardIndex").value;
-    let rarity = document.getElementById("cardRarity").value;
-    let file = document.getElementById("cardImage").files[0];
-
-    let reader = new FileReader();
-    reader.onload = function(e){
-        cards.push({
-            name,
-            index,
-            rarity,
-            image: e.target.result
-        });
-
-        localStorage.setItem("cards", JSON.stringify(cards));
-        renderAdmin();
-    };
-
-    reader.readAsDataURL(file);
+function prev(){
+if(idx>0){ idx--; show(); }
 }
 
-function deleteCard(i){
-    cards.splice(i,1);
-    localStorage.setItem("cards", JSON.stringify(cards));
-    renderAdmin();
+/* COLLECTION */
+function render(){
+let g = document.getElementById("grid");
+g.innerHTML="";
+
+cards.forEach(c=>{
+let owned = col[c.i];
+
+let div = document.createElement("div");
+div.className="smallCard "+(owned?"":"locked");
+
+div.innerHTML = owned ?
+`<img src="${c.img}" width="100%"><br>${c.n}` :
+`???`;
+
+g.appendChild(div);
+});
 }
 
-function renderAdmin(){
-    let div = document.getElementById("adminList");
-    div.innerHTML = "";
+/* ADMIN FIX */
+function add(){
+let name = document.getElementById("n").value;
+let index = document.getElementById("i").value;
+let rarity = document.getElementById("r").value;
+let file = document.getElementById("imgFile").files[0];
 
-    cards.forEach((c,i)=>{
-        div.innerHTML += `
-        <div class="card">
-            <img src="${c.image}">
-            <p>${c.name}</p>
-            <p>#${c.index} | R${c.rarity}</p>
-            <button onclick="deleteCard(${i})">Supprimer</button>
-        </div>`;
-    });
+if(!file) return;
+
+let fr = new FileReader();
+fr.onload = e=>{
+
+cards.push({
+n:name,
+i:index,
+r:parseInt(rarity),
+img:e.target.result
+});
+
+localStorage.setItem("cards",JSON.stringify(cards));
+adminRender();
+};
+
+fr.readAsDataURL(file);
 }
+
+/* ADMIN LIST */
+function adminRender(){
+let d=document.getElementById("list");
+d.innerHTML="";
+
+cards.forEach((c,i)=>{
+d.innerHTML+=`
+<div class="adminCard">
+<img src="${c.img}" width="80"><br>
+${c.n} | R${c.r} | #${c.i}
+<br>
+<button onclick="del(${i})">Suppr</button>
+</div>`;
+});
+}
+
+function del(i){
+cards.splice(i,1);
+localStorage.setItem("cards",JSON.stringify(cards));
+adminRender();
+}
+
 </script>
 
 </body>

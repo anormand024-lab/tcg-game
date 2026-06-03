@@ -20,31 +20,61 @@ button {
   cursor: pointer;
 }
 
-/* COLLECTION GRID */
-.grid {
+/* =====================
+   BOOSTER ANIMATION
+===================== */
+.booster-card {
+  opacity: 0;
+  transform: scale(0.5) rotateY(180deg);
+  animation: reveal 0.5s forwards;
+}
+
+@keyframes reveal {
+  to {
+    opacity: 1;
+    transform: scale(1) rotateY(0deg);
+  }
+}
+
+/* =====================
+   COLLECTION (TCG STYLE)
+===================== */
+.catalogue {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   padding: 10px;
 }
 
-.card {
-  background: #222;
+.tcg-card {
+  background: #1c1c1c;
+  border-radius: 12px;
   padding: 10px;
-  border-radius: 10px;
+  position: relative;
+  text-align: left;
+  box-shadow: 0 0 10px rgba(255,255,255,0.05);
 }
 
-.count {
-  display: block;
-  margin-top: 5px;
-  color: gold;
-  font-weight: bold;
+.tcg-card.locked {
+  opacity: 0.2;
 }
 
-.locked {
-  opacity: 0.3;
+.badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: gold;
+  color: black;
+  padding: 3px 6px;
+  border-radius: 8px;
+  font-size: 12px;
 }
 
-.owned {
-  border: 2px solid #3b82f6;
-}
+/* =====================
+   RARITIES
+===================== */
+.common { border-left: 4px solid #9ca3af; }
+.rare { border-left: 4px solid #3b82f6; }
+.epic { border-left: 4px solid #a855f7; }
+.legendary { border-left: 4px solid #fbbf24; }
+.mythic { border-left: 4px solid #ef4444; }

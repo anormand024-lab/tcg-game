@@ -1,28 +1,29 @@
 let collection = JSON.parse(localStorage.getItem("collection")) || [];
 let gameCards = JSON.parse(localStorage.getItem("gameCards")) || [];
 let dropRates = JSON.parse(localStorage.getItem("dropRates")) || {
-  common: 70,
+  common: 60,
   rare: 25,
-  legendary: 5
+  epic: 10,
+  legendary: 4,
+  mythic: 1
 };
 
-/* =========================
-   INIT CARTES
-========================= */
+/* =====================
+   INIT CARDS
+===================== */
 if (gameCards.length === 0) {
   gameCards = [
     { id: 1, name: "Pikachu", rarity: "common", index: 1 },
-    { id: 2, name: "Dracaufeu", rarity: "rare", index: 2 },
+    { id: 2, name: "Evoli", rarity: "rare", index: 2 },
     { id: 3, name: "Mewtwo", rarity: "legendary", index: 3 },
-    { id: 4, name: "Evoli", rarity: "common", index: 4 },
-    { id: 5, name: "Lugia", rarity: "legendary", index: 5 }
+    { id: 4, name: "Arceus", rarity: "mythic", index: 4 }
   ];
   saveGameCards();
 }
 
-/* =========================
-   NAVIGATION
-========================= */
+/* =====================
+   NAV
+===================== */
 function showScreen(screen) {
   const app = document.getElementById("app");
   app.innerHTML = "";
@@ -32,9 +33,9 @@ function showScreen(screen) {
   if (screen === "admin") renderAdmin();
 }
 
-/* =========================
-   BOOSTER SYSTEM
-========================= */
+/* =====================
+   BOOSTER + ANIMATION
+===================== */
 function renderBooster() {
   document.getElementById("app").innerHTML = `
     <h2>🎁 Booster</h2>
@@ -48,15 +49,17 @@ function getRandomCard() {
 
   let pool = [];
 
-  if (roll < dropRates.legendary) {
+  if (roll < dropRates.mythic) {
+    pool = gameCards.filter(c => c.rarity === "mythic");
+  } else if (roll < dropRates.mythic + dropRates.legendary) {
     pool = gameCards.filter(c => c.rarity === "legendary");
-  } else if (roll < dropRates.legendary + dropRates.rare) {
+  } else if (roll < dropRates.mythic + dropRates.legendary + dropRates.epic) {
+    pool = gameCards.filter(c => c.rarity === "epic");
+  } else if (roll < dropRates.mythic + dropRates.legendary + dropRates.epic + dropRates.rare) {
     pool = gameCards.filter(c => c.rarity === "rare");
   } else {
     pool = gameCards.filter(c => c.rarity === "common");
   }
-
-  if (pool.length === 0) pool = gameCards;
 
   return pool[Math.floor(Math.random() * pool.length)];
 }
@@ -83,79 +86,66 @@ function openBooster() {
     saveCollection();
 
     result.innerHTML += `
-      <div class="card">
-        <h3>${card.name}</h3>
-        <p>${card.rarity}</p>
+      <div class="booster-card">
+        <div class="tcg-card ${card.rarity}">
+          <h3>${card.name}</h3>
+          <p>${card.rarity}</p>
+        </div>
       </div>
     `;
   }
 }
 
-/* =========================
-   COLLECTION GRID (100 SLOTS)
-========================= */
+/* =====================
+   COLLECTION = POKÉMON TCG POCKET STYLE
+===================== */
 function renderCollection() {
   const app = document.getElementById("app");
 
-  app.innerHTML = "<h2>📚 Collection</h2>";
+  app.innerHTML = `<h2>📚 Collection</h2><div class="catalogue">`;
 
-  app.innerHTML += `<div class="grid">`;
+  gameCards.forEach(card => {
+    const owned = collection.find(c => c.name === card.name);
 
-  for (let i = 1; i <= 100; i++) {
-    const card = collection.find(c => c.index === i);
+    app.innerHTML += `
+      <div class="tcg-card ${card.rarity} ${owned ? "" : "locked"}">
+        <h3>${card.name}</h3>
+        <p>${card.rarity}</p>
 
-    if (card) {
-      app.innerHTML += `
-        <div class="card owned">
-          <h4>${card.name}</h4>
-          <p>${card.rarity}</p>
-          <small>#${i}</small>
-          <span class="count">x${card.count || 1}</span>
-        </div>
-      `;
-    } else {
-      app.innerHTML += `
-        <div class="card locked">
-          <h4>???</h4>
-          <small>#${i}</small>
-        </div>
-      `;
-    }
-  }
+        ${
+          owned
+            ? `<span class="badge">x${owned.count}</span>`
+            : `<p>Non obtenu</p>`
+        }
+      </div>
+    `;
+  });
 
   app.innerHTML += `</div>`;
 }
 
-/* =========================
-   ADMIN SYSTEM
-========================= */
+/* =====================
+   ADMIN + DELETE CARDS
+===================== */
 function renderAdmin() {
   const app = document.getElementById("app");
 
   app.innerHTML = `
     <h2>🛠️ Admin</h2>
 
-    <input id="name" placeholder="Nom carte"><br><br>
+    <input id="name" placeholder="Nom"><br><br>
 
     <select id="rarity">
       <option value="common">Common</option>
       <option value="rare">Rare</option>
+      <option value="epic">Epic</option>
       <option value="legendary">Legendary</option>
+      <option value="mythic">Mythic</option>
     </select><br><br>
 
-    <input id="index" type="number" placeholder="Index (1-100)"><br><br>
+    <input id="index" type="number" placeholder="Index"><br><br>
 
     <button onclick="addCard()">Ajouter carte</button>
-
-    <hr>
-
-    <h3>🎲 Drop rates (%)</h3>
-
-    <input id="c" type="number" value="${dropRates.common}"> Common<br>
-    <input id="r" type="number" value="${dropRates.rare}"> Rare<br>
-    <input id="l" type="number" value="${dropRates.legendary}"> Legendary<br>
-
-    <button onclick="saveRates()">Save rates</button>
 
     <hr>
 
@@ -165,6 +155,7 @@ function renderAdmin() {
   renderList();
 }
 
+/* add card */
 function addCard() {
   const name = document.getElementById("name").value;
   const rarity = document.getElementById("rarity").value;
@@ -183,24 +174,31 @@ function addCard() {
   renderAdmin();
 }
 
+/* LIST + DELETE */
 function renderList() {
   const list = document.getElementById("list");
   list.innerHTML = "";
 
-  gameCards.forEach(c => {
+  gameCards.forEach((c, i) => {
     list.innerHTML += `
-      <div class="card">
+      <div class="tcg-card ${c.rarity}">
         <h4>${c.name}</h4>
-        <p>${c.rarity}</p>
-        <small>#${c.index}</small>
+        <p>#${c.index}</p>
+        <button onclick="deleteCard(${i})">🗑️ Supprimer</button>
       </div>
     `;
   });
 }
 
-/* =========================
-   SAVE SYSTEM
-========================= */
+function deleteCard(index) {
+  gameCards.splice(index, 1);
+  saveGameCards();
+  renderAdmin();
+}
+
+/* =====================
+   SAVE
+===================== */
 function saveCollection() {
   localStorage.setItem("collection", JSON.stringify(collection));
 }
@@ -209,18 +207,7 @@ function saveGameCards() {
   localStorage.setItem("gameCards", JSON.stringify(gameCards));
 }
 
-function saveRates() {
-  dropRates = {
-    common: parseInt(document.getElementById("c").value),
-    rare: parseInt(document.getElementById("r").value),
-    legendary: parseInt(document.getElementById("l").value)
-  };
-
-  localStorage.setItem("dropRates", JSON.stringify(dropRates));
-  alert("Saved !");
-}
-
-/* =========================
+/* =====================
    START
-========================= */
+===================== */
 showScreen("booster");

@@ -2,955 +2,276 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<title>TCG Booster Game</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CardPocket — Ouvre tes boosters</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
 <style>
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  :root{
-    --gold:#FFD700;--gold2:#FFA500;--bg:#0a0a1a;--bg2:#12122a;--bg3:#1a1a3e;
-    --text:#e8e0ff;--text2:#a099cc;--rare:#6a5acd;--epic:#c71585;--legendary:#ff8c00;
-    --common:#4a7c59;--uncommon:#2e6b9e;--radius:16px;--red:#e03a3a;--green:#2ecc71;
-  }
-  html,body{height:100%;background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);overflow:hidden}
-  #root{height:100%;display:flex;flex-direction:column}
+body {
+    font-family: Arial;
+    margin: 0;
+    background: white;
+    color: #111;
+}
 
-  /* ── NAV ── */
-  nav{display:flex;background:var(--bg2);border-bottom:1px solid #2a2a5a;flex-shrink:0;z-index:100}
-  nav button{flex:1;padding:12px 4px 10px;background:none;border:none;color:var(--text2);font:700 11px/1 'Nunito',sans-serif;cursor:pointer;letter-spacing:.4px;text-transform:uppercase;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:3px;border-bottom:2px solid transparent}
-  nav button.active{color:var(--gold);border-bottom-color:var(--gold)}
-  nav button svg{width:20px;height:20px}
+header {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
 
-  /* ── SCREENS ── */
-  .screen{flex:1;overflow-y:auto;display:none;flex-direction:column;min-height:0}
-  .screen.active{display:flex}
+button {
+    padding: 10px;
+    border: 1px solid #ccc;
+    background: white;
+    cursor: pointer;
+}
 
-  /* ── SHOP ── */
-  .shop-header{padding:28px 20px 16px;text-align:center}
-  .shop-title{font-family:'Cinzel',serif;font-size:26px;color:var(--gold);text-shadow:0 0 20px #ffd70055}
-  .shop-subtitle{font-size:13px;color:var(--text2);margin-top:4px}
-  .shop-center{padding:0 20px 32px;display:flex;flex-direction:column;align-items:center;gap:20px}
+button:hover {
+    background: #f0f0f0;
+}
 
-  /* single pack card */
-  .solo-pack{width:100%;max-width:320px;background:var(--bg3);border:1px solid #2a2a5a;border-radius:20px;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s}
-  .solo-pack:hover{box-shadow:0 0 32px #6a5acd44}
-  .solo-pack-art{height:200px;display:flex;align-items:center;justify-content:center;font-size:88px;position:relative;overflow:hidden}
-  .solo-pack-info{padding:16px;text-align:center}
-  .solo-pack-name{font:700 18px/1.2 'Cinzel',serif;color:var(--text)}
-  .solo-pack-desc{font-size:12px;color:var(--text2);margin-top:5px}
+.page {
+    display: none;
+    padding: 20px;
+}
 
-  /* cooldown button */
-  .open-pack-btn{width:100%;max-width:320px;padding:16px;border:none;border-radius:14px;font:800 15px/1 'Nunito',sans-serif;cursor:pointer;letter-spacing:.4px;transition:all .2s;position:relative;overflow:hidden}
-  .open-pack-btn.ready{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0a0a1a}
-  .open-pack-btn.ready:active{transform:scale(.97)}
-  .open-pack-btn.cooldown{background:var(--bg3);color:var(--text2);border:1px solid #2a2a5a;cursor:not-allowed}
-  .open-pack-btn.cooldown .cd-bar{position:absolute;left:0;top:0;height:100%;background:#ffffff0d;transition:width .25s linear}
+.active {
+    display: block;
+}
 
-  /* cooldown ring */
-  .cd-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
-  .cd-label{font-size:12px;color:var(--text2)}
-  .cd-time{font:800 18px/1 'Cinzel',serif;color:var(--gold)}
+.card {
+    width: 200px;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin: 10px;
+    text-align: center;
+}
 
-  /* ── OPEN SCREEN ── */
-  .open-screen{position:fixed;inset:0;background:var(--bg);z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
-  .open-screen.visible{display:flex}
-  .booster-wrap{position:relative;display:flex;align-items:center;justify-content:center;flex:1}
-  .booster-obj{width:180px;height:260px;cursor:pointer;position:relative}
-  .booster-obj.shake{animation:shake .4s ease-in-out}
-  @keyframes shake{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-3deg) scale(1.04)}75%{transform:rotate(3deg) scale(1.04)}}
-  .booster-face{position:absolute;inset:0;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:80px;background:linear-gradient(135deg,#1a0040,#3a0080)}
-  .booster-hint{font-size:13px;color:var(--text2);margin-top:16px;animation:pulse 1.5s ease-in-out infinite}
-  @keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
+.card img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+}
 
-  /* CARD REVEAL */
-  .card-reveal{position:fixed;inset:0;background:#05050f;z-index:300;display:none;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
-  .card-reveal.visible{display:flex}
-  .card-counter{font-size:13px;color:var(--text2);margin-bottom:16px;letter-spacing:1px}
-  .card-stage{position:relative;width:260px;height:370px}
-  .card-3d{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.2,1)}
-  .card-3d.flipped{transform:rotateY(180deg)}
-  .card-face,.card-back{position:absolute;inset:0;border-radius:18px;backface-visibility:hidden;-webkit-backface-visibility:hidden}
-  .card-back{background:linear-gradient(135deg,#1a1a3e,#0d0d2b);border:2px solid #2a2a5a;display:flex;align-items:center;justify-content:center;font-size:72px}
-  .card-face{transform:rotateY(180deg);display:flex;flex-direction:column;overflow:hidden}
-  .card-top{flex:1;display:flex;align-items:center;justify-content:center;font-size:72px;position:relative}
-  .card-top::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,transparent 60%,rgba(0,0,0,.6))}
-  .card-img-cover{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
-  .card-bottom{padding:12px 14px;background:rgba(0,0,0,.7)}
-  .card-cname{font:700 16px/1.2 'Cinzel',serif}
-  .card-type{font-size:11px;color:var(--text2);margin-top:2px;text-transform:uppercase;letter-spacing:1px}
-  .card-rarity-row{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
-  .rarity-badge{font-size:10px;font-weight:800;letter-spacing:.5px;padding:3px 8px;border-radius:20px;text-transform:uppercase}
-  .card-power{font-size:11px;color:var(--text2)}
+.locked {
+    background: #eee;
+    color: #999;
+}
 
-  /* RARITY GLOWS */
-  .rarity-common .card-face{border:2px solid #4a7c59;box-shadow:0 0 12px #4a7c5933}
-  .rarity-uncommon .card-face{border:2px solid #2e6b9e;box-shadow:0 0 16px #2e6b9e44}
-  .rarity-rare .card-face{border:2px solid var(--rare);box-shadow:0 0 20px #6a5acd66}
-  .rarity-epic .card-face{border:2px solid var(--epic);box-shadow:0 0 28px #c7158566}
-  .rarity-legendary .card-face{border:2px solid var(--legendary);box-shadow:0 0 36px #ff8c0088,0 0 60px #ff8c0033;animation:legendGlow 2s ease-in-out infinite}
-  @keyframes legendGlow{0%,100%{box-shadow:0 0 36px #ff8c0088,0 0 60px #ff8c0033}50%{box-shadow:0 0 50px #ff8c00cc,0 0 80px #ff8c0066}}
-  .rarity-legendary .card-top::before{content:'✨';position:absolute;top:8px;right:10px;font-size:20px;z-index:2;animation:spin 3s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
+.booster-container {
+    text-align: center;
+}
 
-  .particles{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-  .particle{position:absolute;width:6px;height:6px;border-radius:50%;animation:burst .8s ease-out forwards}
-  @keyframes burst{0%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
-  .swipe-hint{font-size:13px;color:var(--text2);margin-top:20px;opacity:0;transition:opacity .3s}
-  .swipe-hint.show{opacity:1}
-  .nav-btns{display:flex;gap:12px;margin-top:16px}
-  .nav-btn{padding:10px 24px;border-radius:30px;font:700 13px/1 'Nunito',sans-serif;cursor:pointer;border:none;transition:all .15s}
-  .nav-btn.prev{background:#1a1a3e;color:var(--text);border:1px solid #2a2a5a}
-  .nav-btn.next{background:var(--gold);color:#0a0a1a}
-  .nav-btn:disabled{opacity:.3;cursor:not-allowed}
-  .finish-btn{padding:12px 36px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0a0a1a;border:none;border-radius:30px;font:800 14px/1 'Nunito',sans-serif;cursor:pointer;letter-spacing:.5px;margin-top:16px}
+.swipe-box {
+    width: 220px;
+    margin: auto;
+    border: 1px solid #ccc;
+    padding: 10px;
+}
 
-  /* ── COLLECTION ── */
-  .col-header{padding:24px 20px 12px}
-  .col-title{font-family:'Cinzel',serif;font-size:22px;color:var(--gold)}
-  .col-stats{display:flex;gap:16px;margin-top:8px;flex-wrap:wrap}
-  .col-stat{font-size:12px;color:var(--text2)}
-  .col-stat span{color:var(--text);font-weight:700}
-  .col-filters{padding:0 16px 12px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
-  .col-filters::-webkit-scrollbar{display:none}
-  .filter-btn{flex-shrink:0;padding:6px 14px;border-radius:20px;font:700 11px/1 'Nunito',sans-serif;cursor:pointer;border:1px solid #2a2a5a;background:var(--bg3);color:var(--text2);transition:all .2s;white-space:nowrap}
-  .filter-btn.active{color:#0a0a1a}
-  .cards-grid{padding:0 12px 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-
-  /* owned card */
-  .col-card{border-radius:12px;overflow:hidden;position:relative;aspect-ratio:.7;cursor:pointer;border:1.5px solid transparent;transition:transform .15s}
-  .col-card:active{transform:scale(.94)}
-  .col-card-art{width:100%;height:60%;display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden;position:relative}
-  .col-card-art img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
-  .col-card-art .emoji-fallback{position:relative;z-index:1}
-  .col-card-info{padding:6px 7px;background:rgba(0,0,0,.5)}
-  .col-card-name{font-size:11px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .col-card-rarity{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
-  .col-card-count{position:absolute;top:5px;right:5px;background:rgba(0,0,0,.75);color:var(--gold);font:800 10px/1 'Nunito',sans-serif;padding:2px 5px;border-radius:8px}
-  .col-card-num{position:absolute;top:5px;left:6px;background:rgba(0,0,0,.6);color:var(--text2);font:700 9px/1 'Nunito',sans-serif;padding:2px 5px;border-radius:6px}
-
-  /* ── LOCKED (not yet obtained) card ── */
-  .col-card.locked{cursor:default;border-color:#1e1e3a !important;box-shadow:none !important}
-  .col-card.locked .col-card-art{filter:brightness(.18) saturate(0)}
-  .col-card.locked .col-card-name{color:#3a3a5a}
-  .col-card.locked .col-card-rarity{color:#2a2a4a}
-  .col-card.locked .col-card-num{color:#2a2a4a;background:transparent}
-  .locked-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;pointer-events:none}
-  .locked-qqq{font:800 18px/1 'Cinzel',serif;color:#2a2a4a;letter-spacing:2px}
-  .locked-rarity-dot{width:8px;height:8px;border-radius:50%;opacity:.35}
-
-  .col-card.rarity-common{border-color:#4a7c5955}
-  .col-card.rarity-uncommon{border-color:#2e6b9e77}
-  .col-card.rarity-rare{border-color:#6a5acd99}
-  .col-card.rarity-epic{border-color:#c71585aa}
-  .col-card.rarity-legendary{border-color:#ff8c00;box-shadow:0 0 12px #ff8c0055}
-  .rarity-common .rarity-badge{background:#4a7c5933;color:#7fc494}
-  .rarity-uncommon .rarity-badge{background:#2e6b9e33;color:#6ab4e8}
-  .rarity-rare .rarity-badge{background:#6a5acd33;color:#b8a9ff}
-  .rarity-epic .rarity-badge{background:#c7158533;color:#ff6eb4}
-  .rarity-legendary .rarity-badge{background:#ff8c0033;color:#ffd700}
-  .col-card-rarity.common{color:#7fc494}
-  .col-card-rarity.uncommon{color:#6ab4e8}
-  .col-card-rarity.rare{color:#b8a9ff}
-  .col-card-rarity.epic{color:#ff6eb4}
-  .col-card-rarity.legendary{color:#ffd700}
-  .filter-btn[data-rarity="common"].active{background:#4a7c59;border-color:#4a7c59;color:#fff}
-  .filter-btn[data-rarity="uncommon"].active{background:#2e6b9e;border-color:#2e6b9e;color:#fff}
-  .filter-btn[data-rarity="rare"].active{background:var(--rare);border-color:var(--rare);color:#fff}
-  .filter-btn[data-rarity="epic"].active{background:var(--epic);border-color:var(--epic);color:#fff}
-  .filter-btn[data-rarity="legendary"].active{background:var(--legendary);border-color:var(--legendary);color:#0a0a1a}
-  .filter-btn[data-rarity="all"].active{background:var(--gold);border-color:var(--gold);color:#0a0a1a}
-
-  /* ── MODAL DETAIL ── */
-  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
-  .modal-bg.open{display:flex}
-  .modal-card{background:var(--bg3);border-radius:20px;padding:20px;max-width:320px;width:100%;position:relative;border:1px solid #2a2a5a;max-height:90vh;overflow-y:auto}
-  .modal-close{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;line-height:1}
-  .modal-art{height:160px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:80px;margin-bottom:16px;overflow:hidden;position:relative}
-  .modal-art img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
-  .modal-art .emoji-fallback{position:relative;z-index:1}
-  .modal-name{font-family:'Cinzel',serif;font-size:20px;color:var(--text)}
-  .modal-type{font-size:12px;color:var(--text2);margin-top:4px;text-transform:uppercase;letter-spacing:1px}
-  .modal-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-  .modal-stat{background:var(--bg2);border-radius:10px;padding:10px;text-align:center}
-  .modal-stat-val{font:700 18px/1 'Cinzel',serif;color:var(--gold)}
-  .modal-stat-lbl{font-size:10px;color:var(--text2);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
-  .modal-owned{margin-top:14px;text-align:center;font-size:12px;color:var(--text2)}
-  .modal-owned span{color:var(--gold);font-weight:700}
-
-  /* flash */
-  .flash{position:fixed;inset:0;z-index:999;pointer-events:none;opacity:0;transition:opacity .1s}
-  .flash.show{opacity:1;animation:flashAnim .3s ease-out forwards}
-  @keyframes flashAnim{0%{opacity:.8}100%{opacity:0}}
-
-  @keyframes swipeLeft{0%{transform:translateX(0) rotate(0deg);opacity:1}100%{transform:translateX(-120%) rotate(-20deg);opacity:0}}
-  @keyframes swipeRight{0%{transform:translateX(0) rotate(0deg);opacity:1}100%{transform:translateX(120%) rotate(20deg);opacity:0}}
-  .swipe-left{animation:swipeLeft .35s ease-in forwards}
-  .swipe-right{animation:swipeRight .35s ease-in forwards}
-
-  /* ══ ADMIN ══ */
-  .adm-header{padding:20px 16px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-  .adm-title{font-family:'Cinzel',serif;font-size:20px;color:var(--gold)}
-  .adm-add-btn{padding:8px 16px;background:var(--green);color:#fff;border:none;border-radius:20px;font:700 12px/1 'Nunito',sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px}
-  .adm-search{padding:0 16px 10px}
-  .adm-search input{width:100%;padding:9px 14px;background:var(--bg3);border:1px solid #2a2a5a;border-radius:10px;color:var(--text);font:400 13px/1 'Nunito',sans-serif;outline:none}
-  .adm-search input::placeholder{color:var(--text2)}
-  .adm-search input:focus{border-color:#6a5acd}
-  .adm-list{padding:0 12px 24px;display:flex;flex-direction:column;gap:8px}
-  .adm-row{background:var(--bg3);border:1px solid #2a2a5a;border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color .15s}
-  .adm-row:hover{border-color:#6a5acd88}
-  .adm-row-art{width:44px;height:44px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px;overflow:hidden;position:relative}
-  .adm-row-art img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
-  .adm-row-art .emoji-fallback{position:relative;z-index:1}
-  .adm-row-info{flex:1;min-width:0}
-  .adm-row-name{font:700 13px/1.2 'Nunito',sans-serif;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .adm-row-meta{font-size:11px;color:var(--text2);margin-top:3px}
-  .adm-row-num{font-size:10px;font-weight:700;background:var(--bg2);padding:2px 7px;border-radius:10px;color:var(--text2)}
-  .adm-row-rarity{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-  .rc-common{background:#4a7c59}.rc-uncommon{background:#2e6b9e}.rc-rare{background:#6a5acd}.rc-epic{background:#c71585}.rc-legendary{background:#ff8c00}
-  .adm-stats-bar{padding:0 16px 12px;display:flex;gap:8px;flex-wrap:wrap}
-  .adm-stat-pill{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:var(--bg3);border:1px solid #2a2a5a;color:var(--text2)}
-  .adm-stat-pill span{color:var(--gold)}
-
-  /* admin editor modal */
-  .adm-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:600;display:none;align-items:flex-end;justify-content:center}
-  .adm-modal-bg.open{display:flex}
-  .adm-modal{background:var(--bg2);border-radius:20px 20px 0 0;padding:20px 20px 32px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;position:relative}
-  .adm-modal-title{font-family:'Cinzel',serif;font-size:17px;color:var(--gold);margin-bottom:18px;padding-right:28px}
-  .adm-modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;line-height:1}
-  .adm-field{margin-bottom:14px}
-  .adm-label{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:block}
-  .adm-input{width:100%;padding:10px 12px;background:var(--bg3);border:1px solid #2a2a5a;border-radius:10px;color:var(--text);font:400 14px/1 'Nunito',sans-serif;outline:none;transition:border-color .15s}
-  .adm-input:focus{border-color:#6a5acd}
-  .adm-input::placeholder{color:var(--text2)}
-  .adm-select{width:100%;padding:10px 12px;background:var(--bg3);border:1px solid #2a2a5a;border-radius:10px;color:var(--text);font:400 14px/1 'Nunito',sans-serif;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none}
-  .adm-select:focus{border-color:#6a5acd}
-  .adm-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .adm-img-row{display:flex;align-items:center;gap:12px;margin-bottom:6px}
-  .adm-img-preview{width:64px;height:64px;border-radius:10px;border:1px solid #2a2a5a;display:flex;align-items:center;justify-content:center;font-size:32px;overflow:hidden;flex-shrink:0;position:relative}
-  .adm-img-preview img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
-  .adm-img-preview .emoji-fallback{position:relative;z-index:1}
-  .adm-img-btns{display:flex;flex-direction:column;gap:6px;flex:1}
-  .adm-img-upload{padding:7px 12px;background:var(--bg3);border:1px dashed #3a3a7a;border-radius:8px;color:var(--text2);font:600 11px/1 'Nunito',sans-serif;cursor:pointer;text-align:center;transition:all .15s}
-  .adm-img-upload:hover{border-color:#6a5acd;color:var(--text)}
-  .adm-img-upload input[type=file]{display:none}
-  .adm-img-clear{padding:6px 12px;background:transparent;border:1px solid #3a1a1a;border-radius:8px;color:#e03a3a88;font:600 11px/1 'Nunito',sans-serif;cursor:pointer;transition:all .15s}
-  .adm-img-clear:hover{border-color:#e03a3a;color:#e03a3a}
-  .adm-pos-row{display:flex;align-items:center;gap:8px}
-  .adm-pos-row input{width:72px;padding:10px 12px;background:var(--bg3);border:1px solid #2a2a5a;border-radius:10px;color:var(--text);font:700 14px/1 'Nunito',sans-serif;outline:none;text-align:center}
-  .adm-pos-row input:focus{border-color:#6a5acd}
-  .adm-pos-sep{color:var(--text2);font-size:13px}
-  .adm-pos-total{color:var(--text2);font-size:12px}
-  .adm-actions{display:flex;gap:10px;margin-top:20px}
-  .adm-save-btn{flex:1;padding:12px;background:var(--gold);color:#0a0a1a;border:none;border-radius:12px;font:800 14px/1 'Nunito',sans-serif;cursor:pointer}
-  .adm-cancel-btn{padding:12px 20px;background:var(--bg3);border:1px solid #2a2a5a;border-radius:12px;color:var(--text2);font:700 13px/1 'Nunito',sans-serif;cursor:pointer}
-  .adm-del-btn{padding:12px 16px;background:transparent;border:1px solid #3a1a1a;border-radius:12px;color:#e03a3a;font:700 13px/1 'Nunito',sans-serif;cursor:pointer}
-  .adm-del-btn:hover{background:#3a1a1a}
-  option{background:#12122a}
-
-  /* toast */
-  .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a2e1a;border:1px solid #2ecc71;color:#2ecc71;padding:10px 20px;border-radius:30px;font:700 12px/1 'Nunito',sans-serif;z-index:900;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
-  .toast.show{opacity:1}
-
-  /* doublons badge pulse */
-  @keyframes newBadge{0%{transform:scale(1.4)}100%{transform:scale(1)}}
-  .col-card-count.new{animation:newBadge .3s ease-out}
+.hidden {
+    display: none;
+}
 </style>
 </head>
+
 <body>
-<div id="root">
 
-  <!-- SHOP -->
-  <div class="screen active" id="screen-shop">
-    <div class="shop-header">
-      <div class="shop-title">⚡ CardPocket</div>
-      <div class="shop-subtitle">Collecte toutes les cartes · Les doublons comptent !</div>
-    </div>
-    <div class="shop-center">
-      <!-- single pack visual -->
-      <div class="solo-pack" onclick="openBoosterScreen()">
-        <div class="solo-pack-art" id="shop-pack-art" style="background:linear-gradient(135deg,#0d0020,#2a0060)">⚡</div>
-        <div class="solo-pack-info">
-          <div class="solo-pack-name">Booster Mystique</div>
-          <div class="solo-pack-desc">5 cartes · Toutes raretés · Doublons possibles</div>
-        </div>
-      </div>
-      <!-- cooldown button -->
-      <button class="open-pack-btn ready" id="open-pack-btn" onclick="handleOpenPack()">
-        <span id="btn-label">🎴 Ouvrir un booster</span>
-        <div class="cd-bar" id="cd-bar" style="width:0%"></div>
-      </button>
-      <div class="cd-wrap" id="cd-wrap" style="display:none">
-        <div class="cd-label">Prochain booster dans</div>
-        <div class="cd-time" id="cd-time">20s</div>
-      </div>
-    </div>
-  </div>
+<header>
+<button onclick="showPage('booster')">Booster</button>
+<button onclick="showPage('collection')">Collection</button>
+<button onclick="showPage('admin')">Admin</button>
+</header>
 
-  <!-- COLLECTION -->
-  <div class="screen" id="screen-collection">
-    <div class="col-header">
-      <div class="col-title">Ma Collection</div>
-      <div class="col-stats" id="col-stats"></div>
-    </div>
-    <div class="col-filters" id="col-filters">
-      <button class="filter-btn active" data-rarity="all">Toutes</button>
-      <button class="filter-btn" data-rarity="common">Commune</button>
-      <button class="filter-btn" data-rarity="uncommon">Peu Commune</button>
-      <button class="filter-btn" data-rarity="rare">Rare</button>
-      <button class="filter-btn" data-rarity="epic">Épique</button>
-      <button class="filter-btn" data-rarity="legendary">Légendaire</button>
-    </div>
-    <div class="cards-grid" id="cards-grid"></div>
-  </div>
+<!-- BOOSTER -->
+<div id="booster" class="page active">
+    <h2>Ouverture de booster</h2>
+    <button onclick="openBooster()">Ouvrir un booster</button>
+    <p id="cooldownText"></p>
 
-  <!-- ADMIN -->
-  <div class="screen" id="screen-admin">
-    <div class="adm-header">
-      <div class="adm-title">🛠 Admin</div>
-      <button class="adm-add-btn" onclick="openEditor(null)">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Nouvelle carte
-      </button>
+    <div id="boosterView" class="swipe-box hidden">
+        <img id="bImg" width="200">
+        <h3 id="bName"></h3>
+        <p id="bInfo"></p>
+        <button onclick="prevCard()">◀</button>
+        <button onclick="nextCard()">▶</button>
     </div>
-    <div class="adm-stats-bar" id="adm-stats-bar"></div>
-    <div class="adm-search">
-      <input type="text" id="adm-search-input" placeholder="🔍  Rechercher…" oninput="renderAdmin()">
-    </div>
-    <div class="adm-list" id="adm-list"></div>
-  </div>
-
-  <nav>
-    <button class="active" id="nav-shop" onclick="switchTab('shop')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-      Boutique
-    </button>
-    <button id="nav-collection" onclick="switchTab('collection')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-      Collection
-    </button>
-    <button id="nav-admin" onclick="switchTab('admin')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-      Admin
-    </button>
-  </nav>
 </div>
 
-<!-- BOOSTER OPEN SCREEN -->
-<div class="open-screen" id="open-screen">
-  <div style="padding:20px 0 0;font-family:'Cinzel',serif;font-size:20px;color:var(--gold)">Booster Mystique</div>
-  <div class="booster-wrap">
-    <div>
-      <div class="booster-obj" id="booster-obj" onclick="startReveal()">
-        <div class="booster-face">⚡</div>
-      </div>
-      <div style="text-align:center">
-        <div class="booster-hint">Appuie pour ouvrir !</div>
-      </div>
-    </div>
-  </div>
-  <div style="padding:0 0 20px">
-    <button onclick="closeOpenScreen()" style="background:none;border:1px solid #2a2a5a;color:var(--text2);padding:10px 24px;border-radius:30px;font:700 13px/1 'Nunito',sans-serif;cursor:pointer">✕ Annuler</button>
-  </div>
+<!-- COLLECTION -->
+<div id="collection" class="page">
+    <h2>Collection</h2>
+    <div id="collectionGrid"></div>
 </div>
 
-<!-- CARD REVEAL -->
-<div class="card-reveal" id="card-reveal">
-  <div class="card-counter" id="card-counter">Carte 1 / 5</div>
-  <div class="card-stage" id="card-stage">
-    <div class="card-3d" id="card-3d">
-      <div class="card-back">⚡</div>
-      <div class="card-face" id="card-face">
-        <div class="card-top" id="card-top"></div>
-        <div class="card-bottom">
-          <div class="card-cname" id="card-cname"></div>
-          <div class="card-type" id="card-type"></div>
-          <div class="card-rarity-row">
-            <span class="rarity-badge" id="rarity-badge"></span>
-            <span class="card-power" id="card-power"></span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="particles" id="particles"></div>
-  </div>
-  <div class="swipe-hint" id="swipe-hint">← Swipe ou → pour continuer</div>
-  <div class="nav-btns">
-    <button class="nav-btn prev" id="btn-prev" onclick="prevCard()" disabled>◀ Préc.</button>
-    <button class="nav-btn next" id="btn-next" onclick="nextCard()">Suiv. ▶</button>
-  </div>
-  <button class="finish-btn" id="finish-btn" style="display:none" onclick="finishReveal()">Voir ma collection 🎉</button>
-</div>
+<!-- ADMIN -->
+<div id="admin" class="page">
+    <h2>Admin - Gestion cartes</h2>
 
-<!-- MODAL DETAIL -->
-<div class="modal-bg" id="modal-bg" onclick="closeModal(event)">
-  <div class="modal-card">
-    <button class="modal-close" onclick="closeModal()">×</button>
-    <div class="modal-art" id="modal-art"></div>
-    <div class="modal-name" id="modal-name"></div>
-    <div class="modal-type" id="modal-type"></div>
-    <div class="modal-stats" id="modal-stats"></div>
-    <div class="modal-owned">Possédée : <span id="modal-owned-count"></span> fois</div>
-  </div>
-</div>
+    <input id="cardName" placeholder="Nom"><br><br>
+    <input id="cardIndex" placeholder="Index collection"><br><br>
+    <input id="cardRarity" type="number" min="1" max="6" placeholder="Rareté (1-6)"><br><br>
+    <input type="file" id="cardImage"><br><br>
 
-<!-- ADMIN EDITOR -->
-<div class="adm-modal-bg" id="adm-modal-bg">
-  <div class="adm-modal">
-    <button class="adm-modal-close" onclick="closeEditor()">×</button>
-    <div class="adm-modal-title" id="adm-modal-title">Nouvelle carte</div>
-    <div class="adm-field">
-      <label class="adm-label">Image</label>
-      <div class="adm-img-row">
-        <div class="adm-img-preview" id="adm-img-preview"></div>
-        <div class="adm-img-btns">
-          <label class="adm-img-upload">📁 Charger une image<input type="file" id="adm-img-file" accept="image/*" onchange="handleImageUpload(event)"></label>
-          <input type="text" class="adm-input" id="adm-img-url" placeholder="…ou coller une URL" oninput="previewFromUrl()" style="font-size:12px;padding:7px 10px">
-          <button class="adm-img-clear" onclick="clearImage()">✕ Supprimer l'image</button>
-        </div>
-      </div>
-    </div>
-    <div class="adm-field">
-      <label class="adm-label">Emoji (si pas d'image)</label>
-      <input type="text" class="adm-input" id="adm-emoji" placeholder="ex: 🔥" maxlength="4" oninput="updatePreview()">
-    </div>
-    <div class="adm-grid2">
-      <div class="adm-field"><label class="adm-label">Nom</label><input type="text" class="adm-input" id="adm-name" placeholder="ex: Dracaufeu"></div>
-      <div class="adm-field"><label class="adm-label">Type</label><input type="text" class="adm-input" id="adm-type" placeholder="ex: Feu / Dragon"></div>
-    </div>
-    <div class="adm-grid2">
-      <div class="adm-field"><label class="adm-label">Rareté</label>
-        <select class="adm-select" id="adm-rarity">
-          <option value="common">Commune</option>
-          <option value="uncommon">Peu Commune</option>
-          <option value="rare">Rare</option>
-          <option value="epic">Épique</option>
-          <option value="legendary">Légendaire</option>
-        </select>
-      </div>
-      <div class="adm-field"><label class="adm-label">Booster</label>
-        <select class="adm-select" id="adm-pack">
-          <option value="all">Tous les boosters</option>
-        </select>
-      </div>
-    </div>
-    <div class="adm-grid2">
-      <div class="adm-field"><label class="adm-label">Attaque</label><input type="number" class="adm-input" id="adm-power" min="1" max="999" placeholder="90"></div>
-      <div class="adm-field"><label class="adm-label">Défense</label><input type="number" class="adm-input" id="adm-defense" min="1" max="999" placeholder="65"></div>
-    </div>
-    <div class="adm-field">
-      <label class="adm-label">Position dans la collection</label>
-      <div class="adm-pos-row">
-        <input type="number" id="adm-pos" min="1" oninput="clampPos()">
-        <span class="adm-pos-sep">/</span>
-        <span class="adm-pos-total" id="adm-pos-total"></span>
-      </div>
-    </div>
-    <div class="adm-actions">
-      <button class="adm-cancel-btn" onclick="closeEditor()">Annuler</button>
-      <button class="adm-del-btn" id="adm-del-btn" onclick="deleteCard()" style="display:none">🗑</button>
-      <button class="adm-save-btn" onclick="saveCard()">✓ Enregistrer</button>
-    </div>
-  </div>
-</div>
+    <button onclick="addCard()">Ajouter carte</button>
 
-<div class="flash" id="flash"></div>
-<div class="toast" id="toast"></div>
+    <h3>Cartes existantes</h3>
+    <div id="adminList"></div>
+</div>
 
 <script>
-// ══════════════════════════════════════════
-// DATA
-// ══════════════════════════════════════════
-const DEFAULT_CARDS = [
-  {id:'f1',name:'Salamèche',type:'Feu',emoji:'🦎',rarity:'common',power:40,defense:30,pack:'all',pos:1,image:''},
-  {id:'f2',name:'Reptincel',type:'Feu',emoji:'🔥',rarity:'uncommon',power:60,defense:45,pack:'all',pos:2,image:''},
-  {id:'f3',name:'Dracaufeu',type:'Feu / Dragon',emoji:'🐉',rarity:'rare',power:90,defense:65,pack:'all',pos:3,image:''},
-  {id:'f4',name:'Pyroli',type:'Feu',emoji:'🦊',rarity:'uncommon',power:55,defense:50,pack:'all',pos:4,image:''},
-  {id:'f5',name:'Magmar',type:'Feu',emoji:'🌋',rarity:'rare',power:80,defense:55,pack:'all',pos:5,image:''},
-  {id:'f6',name:'Sulfura',type:'Feu / Vol',emoji:'🦅',rarity:'epic',power:110,defense:80,pack:'all',pos:6,image:''},
-  {id:'f7',name:'Ho-Oh',type:'Feu / Vol',emoji:'🌈',rarity:'legendary',power:150,defense:110,pack:'all',pos:7,image:''},
-  {id:'f8',name:'Ponyta',type:'Feu',emoji:'🦄',rarity:'common',power:38,defense:28,pack:'all',pos:8,image:''},
-  {id:'w1',name:'Carapuce',type:'Eau',emoji:'🐢',rarity:'common',power:38,defense:45,pack:'all',pos:9,image:''},
-  {id:'w2',name:'Carabaffe',type:'Eau',emoji:'💧',rarity:'uncommon',power:58,defense:65,pack:'all',pos:10,image:''},
-  {id:'w3',name:'Tortank',type:'Eau',emoji:'🦺',rarity:'rare',power:85,defense:90,pack:'all',pos:11,image:''},
-  {id:'w4',name:'Lokhlass',type:'Eau / Glace',emoji:'🌊',rarity:'rare',power:88,defense:70,pack:'all',pos:12,image:''},
-  {id:'w5',name:'Magicarpe',type:'Eau',emoji:'🐟',rarity:'common',power:10,defense:55,pack:'all',pos:13,image:''},
-  {id:'w6',name:'Léviator',type:'Eau / Vol',emoji:'🐉',rarity:'epic',power:115,defense:75,pack:'all',pos:14,image:''},
-  {id:'w7',name:'Lugia',type:'Psy / Vol',emoji:'🌀',rarity:'legendary',power:145,defense:120,pack:'all',pos:15,image:''},
-  {id:'w8',name:'Tentacool',type:'Eau / Poison',emoji:'🪼',rarity:'common',power:36,defense:40,pack:'all',pos:16,image:''},
-  {id:'g1',name:'Bulbizarre',type:'Plante',emoji:'🌿',rarity:'common',power:36,defense:40,pack:'all',pos:17,image:''},
-  {id:'g2',name:'Herbizarre',type:'Plante',emoji:'🌺',rarity:'uncommon',power:56,defense:60,pack:'all',pos:18,image:''},
-  {id:'g3',name:'Florizarre',type:'Plante / Poison',emoji:'🌸',rarity:'rare',power:82,defense:80,pack:'all',pos:19,image:''},
-  {id:'g4',name:'Chenipan',type:'Insecte',emoji:'🐛',rarity:'common',power:22,defense:35,pack:'all',pos:20,image:''},
-  {id:'g5',name:'Chrysacier',type:'Insecte',emoji:'🫧',rarity:'uncommon',power:35,defense:55,pack:'all',pos:21,image:''},
-  {id:'g6',name:'Papilusion',type:'Insecte / Vol',emoji:'🦋',rarity:'rare',power:78,defense:60,pack:'all',pos:22,image:''},
-  {id:'g7',name:'Arceus',type:'Normal',emoji:'✨',rarity:'legendary',power:160,defense:130,pack:'all',pos:23,image:''},
-  {id:'g8',name:'Scyther',type:'Insecte / Vol',emoji:'🦗',rarity:'epic',power:108,defense:78,pack:'all',pos:24,image:''},
-  {id:'c1',name:'Abra',type:'Psy',emoji:'🔮',rarity:'uncommon',power:50,defense:35,pack:'all',pos:25,image:''},
-  {id:'c2',name:'Kadabra',type:'Psy',emoji:'🌙',rarity:'rare',power:75,defense:50,pack:'all',pos:26,image:''},
-  {id:'c3',name:'Alakazam',type:'Psy',emoji:'⚡',rarity:'epic',power:105,defense:68,pack:'all',pos:27,image:''},
-  {id:'c4',name:'Mewtwo',type:'Psy',emoji:'👾',rarity:'legendary',power:165,defense:125,pack:'all',pos:28,image:''},
-  {id:'c5',name:'Mew',type:'Psy',emoji:'🩷',rarity:'legendary',power:140,defense:115,pack:'all',pos:29,image:''},
-  {id:'c6',name:'Hypno',type:'Psy',emoji:'😴',rarity:'uncommon',power:62,defense:52,pack:'all',pos:30,image:''},
-  {id:'c7',name:'Staross',type:'Eau / Psy',emoji:'⭐',rarity:'rare',power:84,defense:65,pack:'all',pos:31,image:''},
-  {id:'c8',name:'Porygon',type:'Normal',emoji:'🤖',rarity:'common',power:42,defense:48,pack:'all',pos:32,image:''},
-];
+/* ---------------- STORAGE ---------------- */
+let cards = JSON.parse(localStorage.getItem("cards")) || [];
+let collection = JSON.parse(localStorage.getItem("collection")) || {};
+let lastBoost = localStorage.getItem("lastBoost") || 0;
 
-const RARITY_WEIGHTS = {
-  standard:[60,25,12,2.5,.5],
-  slot4:[0,0,65,28,7],
-  slot5:[0,0,55,35,10],
-};
-
-const COOLDOWN_MS = 20000; // 20 secondes
-
-function loadCards(){
-  const s=localStorage.getItem('cp_cards_v3');
-  if(s){try{return JSON.parse(s);}catch(e){}}
-  return DEFAULT_CARDS.map(c=>({...c}));
-}
-function saveCards(){ localStorage.setItem('cp_cards_v3',JSON.stringify(CARDS)); }
-
-let CARDS = loadCards();
-let collection = JSON.parse(localStorage.getItem('cp_collection')||'{}');
-let lastOpenTime = parseInt(localStorage.getItem('cp_last_open')||'0');
-
-let revealCards=[], revealIndex=0, cardFlipped=false, touchStartX=0;
-let editingCardId=null, editorImageData='';
-let cdInterval=null;
-
-// ══════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════
-updateShopButton();
-startCdTick();
-
-// ══════════════════════════════════════════
-// TAB
-// ══════════════════════════════════════════
-function switchTab(tab){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
-  document.getElementById('screen-'+tab).classList.add('active');
-  document.getElementById('nav-'+tab).classList.add('active');
-  if(tab==='collection') renderCollection();
-  if(tab==='admin') renderAdmin();
+/* ---------------- NAV ---------------- */
+function showPage(id){
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    renderCollection();
+    renderAdmin();
 }
 
-// ══════════════════════════════════════════
-// COOLDOWN LOGIC
-// ══════════════════════════════════════════
-function getRemainingMs(){
-  const elapsed = Date.now() - lastOpenTime;
-  return Math.max(0, COOLDOWN_MS - elapsed);
-}
-function isReady(){ return getRemainingMs()===0; }
+/* ---------------- BOOSTER ---------------- */
+let currentBooster = [];
+let index = 0;
 
-function updateShopButton(){
-  const btn = document.getElementById('open-pack-btn');
-  const lbl = document.getElementById('btn-label');
-  const bar = document.getElementById('cd-bar');
-  const wrap = document.getElementById('cd-wrap');
-  const rem = getRemainingMs();
-
-  if(rem===0){
-    btn.className='open-pack-btn ready';
-    lbl.textContent='🎴 Ouvrir un booster';
-    bar.style.width='0%';
-    wrap.style.display='none';
-  } else {
-    const pct = ((COOLDOWN_MS-rem)/COOLDOWN_MS*100).toFixed(1);
-    btn.className='open-pack-btn cooldown';
-    lbl.textContent='⏳ Cooldown…';
-    bar.style.width=pct+'%';
-    wrap.style.display='flex';
-    document.getElementById('cd-time').textContent=Math.ceil(rem/1000)+'s';
-  }
+function rarityRoll(){
+    let r = Math.random();
+    if(r < 0.5) return 1;
+    if(r < 0.75) return 2;
+    if(r < 0.88) return 3;
+    if(r < 0.95) return 4;
+    if(r < 0.99) return 5;
+    return 6;
 }
 
-function startCdTick(){
-  clearInterval(cdInterval);
-  cdInterval = setInterval(()=>{
-    updateShopButton();
-    if(isReady()) clearInterval(cdInterval);
-  },250);
-}
-
-function handleOpenPack(){
-  if(!isReady()) return;
-  openBoosterScreen();
-}
-
-// ══════════════════════════════════════════
-// BOOSTER SCREEN
-// ══════════════════════════════════════════
-function openBoosterScreen(){
-  document.getElementById('open-screen').classList.add('visible');
-}
-function closeOpenScreen(){
-  document.getElementById('open-screen').classList.remove('visible');
-}
-function startReveal(){
-  const b=document.getElementById('booster-obj');
-  b.classList.add('shake');
-  setTimeout(()=>{
-    b.classList.remove('shake');
-    // set cooldown
-    lastOpenTime=Date.now();
-    localStorage.setItem('cp_last_open',lastOpenTime);
-    startCdTick();
-    generateBooster();
-    closeOpenScreen();
-    showReveal();
-  },400);
-}
-
-// ══════════════════════════════════════════
-// CARD GENERATION
-// ══════════════════════════════════════════
-function weightedRarity(weights){
-  const r=Math.random()*100, labels=['common','uncommon','rare','epic','legendary'];
-  let acc=0;
-  for(let i=0;i<weights.length;i++){acc+=weights[i];if(r<acc)return labels[i];}
-  return 'common';
-}
-function generateBooster(){
-  const result=[];
-  for(let i=0;i<5;i++){
-    const weights=i<3?RARITY_WEIGHTS.standard:i===3?RARITY_WEIGHTS.slot4:RARITY_WEIGHTS.slot5;
-    const targetRarity=weightedRarity(weights);
-    const pool=CARDS.filter(c=>c.rarity===targetRarity);
-    const arr=pool.length?pool:CARDS;
-    result.push(arr[Math.floor(Math.random()*arr.length)]);
-  }
-  revealCards=result;
-  result.forEach(c=>{ collection[c.id]=(collection[c.id]||0)+1; });
-  localStorage.setItem('cp_collection',JSON.stringify(collection));
-}
-
-// ══════════════════════════════════════════
-// REVEAL
-// ══════════════════════════════════════════
-function showReveal(){
-  revealIndex=0; cardFlipped=false;
-  document.getElementById('card-reveal').classList.add('visible');
-  renderRevealCard(false);
-  setupSwipe();
-}
-function renderRevealCard(skipFlip){
-  const card=revealCards[revealIndex];
-  const el3d=document.getElementById('card-3d');
-  const stage=document.getElementById('card-stage');
-  el3d.classList.remove('flipped');
-  stage.className='card-stage rarity-'+card.rarity;
-  document.getElementById('card-counter').textContent=`Carte ${revealIndex+1} / 5`;
-
-  const topEl=document.getElementById('card-top');
-  topEl.style.background=cardBg(card.rarity);
-  topEl.innerHTML=card.image
-    ? `<img class="card-img-cover" src="${card.image}" alt="${card.name}">`
-    : `<span style="position:relative;z-index:1;font-size:80px">${card.emoji}</span>`;
-
-  document.getElementById('card-cname').textContent=card.name;
-  document.getElementById('card-type').textContent=card.type;
-  document.getElementById('rarity-badge').textContent=rarityLabel(card.rarity);
-  document.getElementById('card-power').textContent=`ATK ${card.power} · DEF ${card.defense}`;
-
-  clearParticles();
-  document.getElementById('swipe-hint').classList.remove('show');
-  document.getElementById('btn-prev').disabled=revealIndex===0;
-  const last=revealIndex===revealCards.length-1;
-  document.getElementById('btn-next').style.display=last?'none':'';
-  document.getElementById('finish-btn').style.display=last?'block':'none';
-
-  if(skipFlip){
-    el3d.classList.add('flipped'); cardFlipped=true;
-    setTimeout(()=>document.getElementById('swipe-hint').classList.add('show'),400);
-    return;
-  }
-  cardFlipped=false;
-  setTimeout(()=>{
-    if(card.rarity==='legendary') flashScreen(card.rarity);
-    el3d.classList.add('flipped'); cardFlipped=true;
-    spawnParticles(card.rarity);
-    setTimeout(()=>document.getElementById('swipe-hint').classList.add('show'),600);
-  },300);
-}
-function nextCard(){
-  if(revealIndex>=revealCards.length-1) return;
-  animSwipe('left',()=>{revealIndex++;renderRevealCard(false);});
-}
-function prevCard(){
-  if(revealIndex<=0) return;
-  animSwipe('right',()=>{revealIndex--;renderRevealCard(true);});
-}
-function animSwipe(dir,cb){
-  const el=document.getElementById('card-3d');
-  el.classList.add('swipe-'+dir);
-  setTimeout(()=>{el.classList.remove('swipe-'+dir);cb();},320);
-}
-function finishReveal(){
-  document.getElementById('card-reveal').classList.remove('visible');
-  switchTab('collection');
-}
-
-// ══════════════════════════════════════════
-// PARTICLES / FLASH
-// ══════════════════════════════════════════
-function spawnParticles(rarity){
-  const c=document.getElementById('particles'); c.innerHTML='';
-  const cols={common:['#7fc494'],uncommon:['#6ab4e8'],rare:['#b8a9ff','#9a85ff'],epic:['#ff6eb4','#ff1493'],legendary:['#ffd700','#ff8c00','#fff']};
-  const cl=cols[rarity]||['#fff'];
-  const n=rarity==='legendary'?30:rarity==='epic'?20:12;
-  for(let i=0;i<n;i++){
-    const p=document.createElement('div'); p.className='particle';
-    const a=Math.random()*360,d=80+Math.random()*120;
-    p.style.cssText=`left:50%;top:50%;background:${cl[Math.floor(Math.random()*cl.length)]};--tx:${Math.cos(a*Math.PI/180)*d}px;--ty:${Math.sin(a*Math.PI/180)*d-60}px;animation-delay:${Math.random()*.2}s;width:${4+Math.random()*5}px;height:${4+Math.random()*5}px`;
-    c.appendChild(p);
-  }
-}
-function clearParticles(){ document.getElementById('particles').innerHTML=''; }
-function flashScreen(rarity){
-  const f=document.getElementById('flash');
-  f.style.background={legendary:'#ff8c0044',epic:'#c7158533',rare:'#6a5acd33'}[rarity]||'#ffffff22';
-  f.classList.add('show');
-  setTimeout(()=>f.classList.remove('show'),300);
-}
-
-// ══════════════════════════════════════════
-// SWIPE
-// ══════════════════════════════════════════
-function setupSwipe(){
-  const stage=document.getElementById('card-stage');
-  stage.addEventListener('touchstart',e=>{touchStartX=e.changedTouches[0].clientX},{passive:true});
-  stage.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-touchStartX;if(Math.abs(dx)>50){dx<0?nextCard():prevCard();}},{passive:true});
-  stage.addEventListener('mousedown',e=>{touchStartX=e.clientX});
-  stage.addEventListener('mouseup',e=>{const dx=e.clientX-touchStartX;if(Math.abs(dx)>50){dx<0?nextCard():prevCard();}});
-}
-
-// ══════════════════════════════════════════
-// COLLECTION — shows ALL cards, locked = grey
-// ══════════════════════════════════════════
-function renderCollection(){
-  const grid=document.getElementById('cards-grid');
-  const activeFilter=document.querySelector('.filter-btn.active')?.dataset.rarity||'all';
-  const total=CARDS.length;
-
-  // all cards sorted by pos
-  let sorted=[...CARDS].sort((a,b)=>(a.pos||999)-(b.pos||999));
-  if(activeFilter!=='all') sorted=sorted.filter(c=>c.rarity===activeFilter);
-
-  // stats (based on owned)
-  const owned=Object.entries(collection).filter(([,v])=>v>0);
-  const ownedSet=new Set(owned.map(([id])=>id));
-  const uniqOwned=owned.filter(([id])=>CARDS.find(c=>c.id===id)).length;
-  const by={common:0,uncommon:0,rare:0,epic:0,legendary:0};
-  owned.forEach(([id])=>{const c=CARDS.find(x=>x.id===id);if(c)by[c.rarity]++;});
-  document.getElementById('col-stats').innerHTML=`
-    <div class="col-stat">Découvertes : <span>${uniqOwned}/${total}</span></div>
-    <div class="col-stat">Légendaires : <span>${by.legendary}</span></div>
-    <div class="col-stat">Épiques : <span>${by.epic}</span></div>
-    <div class="col-stat">Rares : <span>${by.rare}</span></div>
-  `;
-
-  grid.innerHTML=sorted.map(card=>{
-    const count=collection[card.id]||0;
-    const isOwned=count>0;
-
-    if(!isOwned){
-      // LOCKED card — greyed out
-      const dotColor={common:'#4a7c59',uncommon:'#2e6b9e',rare:'#6a5acd',epic:'#c71585',legendary:'#ff8c00'}[card.rarity];
-      return `
-        <div class="col-card locked rarity-${card.rarity}" style="background:var(--bg3)">
-          <div class="col-card-num">${card.pos||'?'}/${total}</div>
-          <div class="col-card-art" style="background:${cardBg(card.rarity)}">
-            <span class="emoji-fallback">${card.emoji}</span>
-          </div>
-          <div class="locked-label">
-            <div class="locked-qqq">???</div>
-            <div class="locked-rarity-dot" style="background:${dotColor}"></div>
-          </div>
-          <div class="col-card-info">
-            <div class="col-card-name" style="color:#2a2a4a">???</div>
-            <div class="col-card-rarity ${card.rarity}" style="opacity:.25">${rarityLabel(card.rarity)}</div>
-          </div>
-        </div>
-      `;
+function openBooster(){
+    let now = Date.now();
+    if(now - lastBoost < 20000){
+        document.getElementById("cooldownText").innerText =
+        "Cooldown actif: " + Math.ceil((20000 - (now - lastBoost))/1000) + "s";
+        return;
     }
 
-    // OWNED card
-    const artHtml=card.image
-      ? `<img src="${card.image}" alt="${card.name}"><span class="emoji-fallback" style="opacity:0">${card.emoji}</span>`
-      : `<span class="emoji-fallback">${card.emoji}</span>`;
-    return `
-      <div class="col-card rarity-${card.rarity}" onclick="showModal('${card.id}')">
-        <div class="col-card-num">${card.pos||'?'}/${total}</div>
-        ${count>1?`<div class="col-card-count">×${count}</div>`:''}
-        <div class="col-card-art" style="background:${cardBg(card.rarity)}">${artHtml}</div>
-        <div class="col-card-info">
-          <div class="col-card-name">${card.name}</div>
-          <div class="col-card-rarity ${card.rarity}">${rarityLabel(card.rarity)}</div>
-        </div>
-      </div>
-    `;
-  }).join('');
+    lastBoost = now;
+    localStorage.setItem("lastBoost", lastBoost);
+
+    currentBooster = [];
+
+    for(let i=0;i<5;i++){
+        let rarity = rarityRoll();
+        let pool = cards.filter(c => c.rarity == rarity);
+        if(pool.length > 0){
+            currentBooster.push(pool[Math.floor(Math.random()*pool.length)]);
+        }
+    }
+
+    index = 0;
+    showCard();
+    document.getElementById("boosterView").classList.remove("hidden");
 }
 
-document.getElementById('col-filters').addEventListener('click',e=>{
-  const btn=e.target.closest('.filter-btn'); if(!btn) return;
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderCollection();
-});
+function showCard(){
+    let c = currentBooster[index];
+    if(!c) return;
 
-// ══════════════════════════════════════════
-// MODAL
-// ══════════════════════════════════════════
-function showModal(id){
-  const card=CARDS.find(c=>c.id===id);
-  const count=collection[id]||0;
-  const artEl=document.getElementById('modal-art');
-  artEl.style.background=cardBg(card.rarity);
-  artEl.innerHTML=card.image
-    ? `<img src="${card.image}" alt="${card.name}"><span class="emoji-fallback" style="font-size:80px;opacity:0">${card.emoji}</span>`
-    : `<span class="emoji-fallback" style="font-size:80px">${card.emoji}</span>`;
-  document.getElementById('modal-name').textContent=card.name;
-  document.getElementById('modal-type').textContent=card.type;
-  document.getElementById('modal-owned-count').textContent=count;
-  document.getElementById('modal-stats').innerHTML=`
-    <div class="modal-stat"><div class="modal-stat-val">${card.power}</div><div class="modal-stat-lbl">Attaque</div></div>
-    <div class="modal-stat"><div class="modal-stat-val">${card.defense}</div><div class="modal-stat-lbl">Défense</div></div>
-    <div class="modal-stat"><div class="modal-stat-val" style="font-size:14px;color:${rarityColor(card.rarity)}">${rarityLabel(card.rarity)}</div><div class="modal-stat-lbl">Rareté</div></div>
-    <div class="modal-stat"><div class="modal-stat-val" style="font-size:13px">${card.pos||'?'}/${CARDS.length}</div><div class="modal-stat-lbl">N° collection</div></div>
-  `;
-  document.getElementById('modal-bg').classList.add('open');
-}
-function closeModal(e){
-  if(!e||e.target===document.getElementById('modal-bg')||e.type==='click')
-    document.getElementById('modal-bg').classList.remove('open');
+    document.getElementById("bImg").src = c.image;
+    document.getElementById("bName").innerText = c.name;
+    document.getElementById("bInfo").innerText =
+        "Rareté: " + c.rarity + " | Index: " + c.index;
+
+    collection[c.index] = c;
+    localStorage.setItem("collection", JSON.stringify(collection));
 }
 
-// ══════════════════════════════════════════
-// ADMIN
-// ══════════════════════════════════════════
+function nextCard(){
+    if(index < currentBooster.length - 1){
+        index++;
+        showCard();
+    }
+}
+
+function prevCard(){
+    if(index > 0){
+        index--;
+        showCard();
+    }
+}
+
+/* ---------------- COLLECTION ---------------- */
+function renderCollection(){
+    let div = document.getElementById("collectionGrid");
+    div.innerHTML = "";
+
+    cards.forEach(c => {
+        let owned = collection[c.index];
+
+        let el = document.createElement("div");
+        el.className = "card";
+
+        if(owned){
+            el.innerHTML = `
+                <img src="${c.image}">
+                <h4>${c.name}</h4>
+                <p>Rareté ${c.rarity}</p>
+                <p>#${c.index}</p>
+            `;
+        } else {
+            el.classList.add("locked");
+            el.innerHTML = "<h3>???</h3>";
+        }
+
+        div.appendChild(el);
+    });
+}
+
+/* ---------------- ADMIN ---------------- */
+function addCard(){
+    let name = document.getElementById("cardName").value;
+    let index = document.getElementById("cardIndex").value;
+    let rarity = document.getElementById("cardRarity").value;
+    let file = document.getElementById("cardImage").files[0];
+
+    let reader = new FileReader();
+    reader.onload = function(e){
+        cards.push({
+            name,
+            index,
+            rarity,
+            image: e.target.result
+        });
+
+        localStorage.setItem("cards", JSON.stringify(cards));
+        renderAdmin();
+    };
+
+    reader.readAsDataURL(file);
+}
+
+function deleteCard(i){
+    cards.splice(i,1);
+    localStorage.setItem("cards", JSON.stringify(cards));
+    renderAdmin();
+}
+
 function renderAdmin(){
-  const query=(document.getElementById('adm-search-input').value||'').toLowerCase();
-  const filtered=CARDS.filter(c=>
-    c.name.toLowerCase().includes(query)||c.type.toLowerCase().includes(query)||
-    c.rarity.includes(query)
-  ).sort((a,b)=>(a.pos||999)-(b.pos||999));
+    let div = document.getElementById("adminList");
+    div.innerHTML = "";
 
-  const by={common:0,uncommon:0,rare:0,epic:0,legendary:0};
-  CARDS.forEach(c=>by[c.rarity]++);
-  document.getElementById('adm-stats-bar').innerHTML=`
-    <div class="adm-stat-pill">Total : <span>${CARDS.length}</span></div>
-    <div class="adm-stat-pill" style="color:#7fc494">Comm. : <span>${by.common}</span></div>
-    <div class="adm-stat-pill" style="color:#6ab4e8">Peu c. : <span>${by.uncommon}</span></div>
-    <div class="adm-stat-pill" style="color:#b8a9ff">Rares : <span>${by.rare}</span></div>
-    <div class="adm-stat-pill" style="color:#ff6eb4">Épiq. : <span>${by.epic}</span></div>
-    <div class="adm-stat-pill" style="color:#ffd700">Légend. : <span>${by.legendary}</span></div>
-  `;
-
-  document.getElementById('adm-list').innerHTML=filtered.length
-    ? filtered.map(card=>{
-        const artHtml=card.image?`<img src="${card.image}" alt="${card.name}"><span class="emoji-fallback" style="opacity:0">${card.emoji}</span>`:`<span class="emoji-fallback">${card.emoji}</span>`;
-        return `<div class="adm-row" onclick="openEditor('${card.id}')">
-          <div class="adm-row-art" style="background:${cardBg(card.rarity)}">${artHtml}</div>
-          <div class="adm-row-rarity rc-${card.rarity}"></div>
-          <div class="adm-row-info">
-            <div class="adm-row-name">${card.name}</div>
-            <div class="adm-row-meta">${card.type} · ${rarityLabel(card.rarity)}</div>
-          </div>
-          <div class="adm-row-num">${card.pos||'?'}/${CARDS.length}</div>
-          <div style="color:var(--text2);font-size:18px;padding-left:4px">›</div>
+    cards.forEach((c,i)=>{
+        div.innerHTML += `
+        <div class="card">
+            <img src="${c.image}">
+            <p>${c.name}</p>
+            <p>#${c.index} | R${c.rarity}</p>
+            <button onclick="deleteCard(${i})">Supprimer</button>
         </div>`;
-      }).join('')
-    : '<div style="text-align:center;padding:40px;color:var(--text2)">Aucune carte</div>';
+    });
 }
-
-function openEditor(id){
-  editingCardId=id;
-  const card=id?CARDS.find(c=>c.id===id):null;
-  document.getElementById('adm-modal-title').textContent=card?`Modifier — ${card.name}`:'Nouvelle carte';
-  document.getElementById('adm-del-btn').style.display=card?'':'none';
-  editorImageData=card?.image||'';
-  document.getElementById('adm-img-url').value=(card?.image&&!card.image.startsWith('data:'))?card.image:'';
-  document.getElementById('adm-emoji').value=card?.emoji||'🃏';
-  document.getElementById('adm-name').value=card?.name||'';
-  document.getElementById('adm-type').value=card?.type||'';
-  document.getElementById('adm-rarity').value=card?.rarity||'common';
-  document.getElementById('adm-power').value=card?.power||50;
-  document.getElementById('adm-defense').value=card?.defense||50;
-  document.getElementById('adm-pos').value=card?.pos||CARDS.length+1;
-  document.getElementById('adm-pos-total').textContent=CARDS.length+(card?0:1);
-  updatePreview();
-  document.getElementById('adm-modal-bg').classList.add('open');
-}
-function closeEditor(){ document.getElementById('adm-modal-bg').classList.remove('open'); editingCardId=null; editorImageData=''; }
-function updatePreview(){
-  const preview=document.getElementById('adm-img-preview');
-  const emoji=document.getElementById('adm-emoji').value||'🃏';
-  const rarity=document.getElementById('adm-rarity').value||'common';
-  preview.style.background=cardBg(rarity);
-  preview.innerHTML=editorImageData
-    ? `<img src="${editorImageData}"><span class="emoji-fallback" style="opacity:0">${emoji}</span>`
-    : `<span class="emoji-fallback">${emoji}</span>`;
-}
-function handleImageUpload(e){
-  const file=e.target.files[0]; if(!file) return;
-  const r=new FileReader();
-  r.onload=ev=>{editorImageData=ev.target.result;document.getElementById('adm-img-url').value='';updatePreview();};
-  r.readAsDataURL(file);
-}
-function previewFromUrl(){ editorImageData=document.getElementById('adm-img-url').value.trim(); updatePreview(); }
-function clearImage(){ editorImageData=''; document.getElementById('adm-img-url').value=''; document.getElementById('adm-img-file').value=''; updatePreview(); }
-function clampPos(){ const i=document.getElementById('adm-pos'),m=CARDS.length+(editingCardId?0:1); if(i.value<1)i.value=1; if(i.value>m)i.value=m; }
-
-function saveCard(){
-  const name=document.getElementById('adm-name').value.trim();
-  if(!name){showToast('⚠ Nom requis',true);return;}
-  const nc={
-    id:editingCardId||'c_'+Date.now(),
-    name,type:document.getElementById('adm-type').value.trim()||'Normal',
-    emoji:document.getElementById('adm-emoji').value||'🃏',
-    rarity:document.getElementById('adm-rarity').value,
-    pack:'all',
-    power:parseInt(document.getElementById('adm-power').value)||50,
-    defense:parseInt(document.getElementById('adm-defense').value)||50,
-    pos:parseInt(document.getElementById('adm-pos').value)||CARDS.length+1,
-    image:editorImageData||'',
-  };
-  if(editingCardId){const i=CARDS.findIndex(c=>c.id===editingCardId);if(i>-1)CARDS[i]=nc;}
-  else CARDS.push(nc);
-  saveCards(); closeEditor(); renderAdmin();
-  showToast(editingCardId?'✓ Carte modifiée !':'✓ Carte ajoutée !');
-}
-function deleteCard(){
-  if(!editingCardId) return;
-  if(!confirm(`Supprimer "${CARDS.find(c=>c.id===editingCardId)?.name}" ?`)) return;
-  CARDS.splice(CARDS.findIndex(c=>c.id===editingCardId),1);
-  delete collection[editingCardId];
-  localStorage.setItem('cp_collection',JSON.stringify(collection));
-  saveCards(); closeEditor(); renderAdmin();
-  showToast('🗑 Supprimée');
-}
-document.getElementById('adm-modal-bg').addEventListener('click',e=>{if(e.target===document.getElementById('adm-modal-bg'))closeEditor();});
-document.getElementById('adm-rarity').addEventListener('change',updatePreview);
-
-// ══════════════════════════════════════════
-// TOAST + HELPERS
-// ══════════════════════════════════════════
-function showToast(msg,isError=false){
-  const t=document.getElementById('toast');
-  t.textContent=msg;
-  t.style.background=isError?'#2e1a1a':'#1a2e1a';
-  t.style.borderColor=isError?'#e03a3a':'#2ecc71';
-  t.style.color=isError?'#e03a3a':'#2ecc71';
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2200);
-}
-function rarityLabel(r){ return {common:'Commune',uncommon:'Peu Commune',rare:'Rare',epic:'Épique',legendary:'Légendaire'}[r]||r; }
-function rarityColor(r){ return {common:'#7fc494',uncommon:'#6ab4e8',rare:'#b8a9ff',epic:'#ff6eb4',legendary:'#ffd700'}[r]||'#fff'; }
-function cardBg(r){ return {common:'linear-gradient(135deg,#1a2e20,#2d4a35)',uncommon:'linear-gradient(135deg,#0d1e30,#1a3a55)',rare:'linear-gradient(135deg,#1a1540,#2e2880)',epic:'linear-gradient(135deg,#2a0520,#5a0a40)',legendary:'linear-gradient(135deg,#2a1500,#5a3200)'}[r]||'#1a1a3e'; }
 </script>
+
 </body>
 </html>

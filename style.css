@@ -1,35 +1,48 @@
 body {
+  margin: 0;
   font-family: Arial;
-  background: white;
-  color: black;
+  background: #ffffff;
+  color: #111;
+}
+
+header {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
   text-align: center;
 }
 
-button {
-  padding: 10px;
+nav button {
   margin: 5px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 12px;
+  border: none;
   background: black;
   color: white;
 }
 
-.tab {
-  margin-top: 20px;
+.page {
+  padding: 15px;
 }
 
 .hidden {
   display: none;
 }
 
+/* CARD PRO STYLE */
 .card {
+  width: 180px;
+  height: 240px;
+  border-radius: 16px;
+  margin: 10px auto;
+  padding: 10px;
+  background: white;
   border: 1px solid #eee;
-  padding: 15px;
-  margin: 10px;
-  border-radius: 12px;
-  display: inline-block;
-  min-width: 120px;
-  animation: pop 0.2s ease;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  animation: pop 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
 }
 
 @keyframes pop {
@@ -37,6 +50,20 @@ button {
   to { transform: scale(1); opacity: 1; }
 }
 
-.locked {
-  color: #aaa;
+/* RARETÉS */
+.r1 { box-shadow: 0 0 10px #ccc; }
+.r2 { box-shadow: 0 0 10px #6aa9ff; }
+.r3 { box-shadow: 0 0 12px #7c4dff; }
+.r4 { box-shadow: 0 0 14px #ffb74d; }
+.r5 { box-shadow: 0 0 18px #ff5252; }
+.r6 { box-shadow: 0 0 22px gold; }
+
+/* ANIMATION PACK */
+.flash {
+  animation: flash 0.4s ease;
+}
+
+@keyframes flash {
+  0% { background: black; }
+  100% { background: white; }
 }

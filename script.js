@@ -1,5 +1,6 @@
+
 // ========================
-// BASE CARTES
+// BASE CARDS
 // ========================
 const baseCards = [
   { id: 1, name: "Draco", rarity: 1 },
@@ -23,7 +24,7 @@ const rates = [
 ];
 
 // ========================
-// STATE GLOBAL
+// STATE GLOBAL (IMPORTANT)
 // ========================
 let currentPack = [];
 let index = 0;
@@ -31,7 +32,7 @@ let cooldown = 0;
 let interval = null;
 
 // ========================
-// LOCAL STORAGE
+// STORAGE
 // ========================
 function getCollection() {
   return JSON.parse(localStorage.getItem("cards") || "[]");
@@ -46,14 +47,14 @@ function getAdminCards() {
 }
 
 // ========================
-// MERGE CARTES (BASE + ADMIN)
+// MERGE ALL CARDS
 // ========================
 function getAllCards() {
   return [...baseCards, ...getAdminCards()];
 }
 
 // ========================
-// RARETÉ RNG
+// RARITY RNG
 // ========================
 function getRarity() {
   let r = Math.random() * 100;
@@ -68,7 +69,7 @@ function getRarity() {
 }
 
 // ========================
-// OUVERTURE PACK (5 FIXES)
+// OPEN PACK (5 FIXE + SAFE)
 // ========================
 function openPack() {
   const pack = [];
@@ -82,14 +83,14 @@ function openPack() {
     pack.push(card);
   }
 
-  const old = getCollection();
-  saveCollection([...old, ...pack]);
+  // save collection
+  saveCollection([...getCollection(), ...pack]);
 
   return pack;
 }
 
 // ========================
-// BOOSTER UI
+// BOOSTER RENDER (IMPORTANT FIX)
 // ========================
 function renderBooster() {
   const el = document.getElementById("booster");
@@ -99,14 +100,14 @@ function renderBooster() {
       ${cooldown > 0 ? "Cooldown " + cooldown + "s" : "Ouvrir Booster"}
     </button>
 
-    <div id="cardDisplay"></div>
+    <div id="cardBox"></div>
   `;
 
   document.getElementById("openBtn").onclick = openBooster;
 }
 
 // ========================
-// OPEN BOOSTER FLOW
+// OPEN BOOSTER (FIX STABLE FLOW)
 // ========================
 function openBooster() {
   if (cooldown > 0) return;
@@ -116,15 +117,16 @@ function openBooster() {
 
   showCard();
 
-  const display = document.getElementById("cardDisplay");
+  const box = document.getElementById("cardBox");
 
-  display.onclick = () => {
+  // IMPORTANT: pas de reset renderBooster ici
+  box.onclick = () => {
     index++;
 
     if (index < currentPack.length) {
       showCard();
     } else {
-      display.innerHTML = `<p>Pack terminé 🎉</p>`;
+      box.innerHTML = `<p>Pack terminé 🎉</p>`;
     }
   };
 
@@ -132,13 +134,16 @@ function openBooster() {
 }
 
 // ========================
-// SHOW CARD (1 PAR 1)
+// SHOW CARD (SAFE)
 // ========================
 function showCard() {
-  const display = document.getElementById("cardDisplay");
+  const box = document.getElementById("cardBox");
+
   const c = currentPack[index];
 
-  display.innerHTML = `
+  if (!c) return;
+
+  box.innerHTML = `
     <div class="card">
       <h2>${c.name}</h2>
       <p>Rarity: ${c.rarity}</p>
@@ -149,7 +154,7 @@ function showCard() {
 }
 
 // ========================
-// COOLDOWN
+// COOLDOWN (SAFE)
 // ========================
 function startCooldown() {
   cooldown = 20;
@@ -159,7 +164,13 @@ function startCooldown() {
   interval = setInterval(() => {
     cooldown--;
 
-    renderBooster();
+    // IMPORTANT: ne PAS reset pack
+    const btn = document.getElementById("openBtn");
+    if (btn) {
+      btn.innerText = cooldown > 0
+        ? `Cooldown ${cooldown}s`
+        : "Ouvrir Booster";
+    }
 
     if (cooldown <= 0) {
       clearInterval(interval);
@@ -168,12 +179,13 @@ function startCooldown() {
 }
 
 // ========================
-// COLLECTION
+// COLLECTION (FIX ADMIN CARDS)
 // ========================
 function renderCollection() {
   const el = document.getElementById("collection");
+
   const owned = getCollection();
-  const all = baseCards;
+  const all = getAllCards();
 
   el.innerHTML = "<h2>Collection</h2>";
 
@@ -190,19 +202,20 @@ function renderCollection() {
 }
 
 // ========================
-// ADMIN
+// ADMIN (FIX PERSISTENCE)
 // ========================
 function renderAdmin() {
   const el = document.getElementById("admin");
+
   const adminCards = getAdminCards();
 
   el.innerHTML = `
     <h2>Admin</h2>
 
-    <input id="cardName" placeholder="Nom carte" />
-    <input id="cardRarity" type="number" min="1" max="6" placeholder="Rareté" />
+    <input id="name" placeholder="Nom carte" />
+    <input id="rarity" type="number" min="1" max="6" placeholder="Rareté" />
 
-    <button onclick="addCard()">Ajouter carte</button>
+    <button onclick="addCard()">Ajouter</button>
 
     <h3>Cartes admin</h3>
     <div id="adminList"></div>
@@ -213,30 +226,30 @@ function renderAdmin() {
   adminCards.forEach(c => {
     list.innerHTML += `
       <div class="card">
-        <b>${c.name}</b> (R${c.rarity})
+        ${c.name} (R${c.rarity})
       </div>
     `;
   });
 }
 
+// ========================
+// ADD CARD FIX
+// ========================
 function addCard() {
-  const name = document.getElementById("cardName").value;
-  const rarity = Number(document.getElementById("cardRarity").value);
+  const name = document.getElementById("name").value;
+  const rarity = Number(document.getElementById("rarity").value);
 
   if (!name || !rarity) return;
 
   const adminCards = getAdminCards();
 
-  const newCard = {
+  adminCards.push({
     id: Date.now(),
     name,
     rarity
-  };
+  });
 
-  localStorage.setItem(
-    "adminCards",
-    JSON.stringify([...adminCards, newCard])
-  );
+  localStorage.setItem("adminCards", JSON.stringify(adminCards));
 
   renderAdmin();
 }
@@ -253,7 +266,5 @@ function showTab(tab) {
   if (tab === "admin") renderAdmin();
 }
 
-// ========================
 // INIT
-// ========================
 showTab("booster");

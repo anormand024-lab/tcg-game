@@ -1,0 +1,42 @@
+body {
+  font-family: Arial;
+  background: white;
+  color: black;
+  text-align: center;
+}
+
+button {
+  padding: 10px;
+  margin: 5px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: black;
+  color: white;
+}
+
+.tab {
+  margin-top: 20px;
+}
+
+.hidden {
+  display: none;
+}
+
+.card {
+  border: 1px solid #eee;
+  padding: 15px;
+  margin: 10px;
+  border-radius: 12px;
+  display: inline-block;
+  min-width: 120px;
+  animation: pop 0.2s ease;
+}
+
+@keyframes pop {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.locked {
+  color: #aaa;
+}

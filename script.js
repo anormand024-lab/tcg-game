@@ -1,7 +1,6 @@
-
-// --------------------
-// CARDS BASE
-// --------------------
+// ========================
+// BASE CARTES
+// ========================
 const baseCards = [
   { id: 1, name: "Draco", rarity: 1 },
   { id: 2, name: "Aqua", rarity: 2 },
@@ -11,9 +10,9 @@ const baseCards = [
   { id: 6, name: "Chrono", rarity: 6 }
 ];
 
-// --------------------
+// ========================
 // DROP RATES
-// --------------------
+// ========================
 const rates = [
   [1, 55],
   [2, 25],
@@ -23,9 +22,17 @@ const rates = [
   [6, 0.5]
 ];
 
-// --------------------
-// STORAGE
-// --------------------
+// ========================
+// STATE GLOBAL
+// ========================
+let currentPack = [];
+let index = 0;
+let cooldown = 0;
+let interval = null;
+
+// ========================
+// LOCAL STORAGE
+// ========================
 function getCollection() {
   return JSON.parse(localStorage.getItem("cards") || "[]");
 }
@@ -34,9 +41,20 @@ function saveCollection(cards) {
   localStorage.setItem("cards", JSON.stringify(cards));
 }
 
-// --------------------
-// GACHA
-// --------------------
+function getAdminCards() {
+  return JSON.parse(localStorage.getItem("adminCards") || "[]");
+}
+
+// ========================
+// MERGE CARTES (BASE + ADMIN)
+// ========================
+function getAllCards() {
+  return [...baseCards, ...getAdminCards()];
+}
+
+// ========================
+// RARETÉ RNG
+// ========================
 function getRarity() {
   let r = Math.random() * 100;
   let sum = 0;
@@ -49,13 +67,17 @@ function getRarity() {
   return 1;
 }
 
+// ========================
+// OUVERTURE PACK (5 FIXES)
+// ========================
 function openPack() {
   const pack = [];
 
   for (let i = 0; i < 5; i++) {
     const rarity = getRarity();
-    const pool = baseCards.filter(c => c.rarity === rarity);
-    const card = pool[Math.floor(Math.random() * pool.length)];
+    const pool = getAllCards().filter(c => c.rarity === rarity);
+
+    const card = pool[Math.floor(Math.random() * pool.length)] || baseCards[0];
 
     pack.push(card);
   }
@@ -66,11 +88,9 @@ function openPack() {
   return pack;
 }
 
-// --------------------
-// BOOSTER TAB
-// --------------------
-let cooldown = 0;
-
+// ========================
+// BOOSTER UI
+// ========================
 function renderBooster() {
   const el = document.getElementById("booster");
 
@@ -78,61 +98,90 @@ function renderBooster() {
     <button id="openBtn">
       ${cooldown > 0 ? "Cooldown " + cooldown + "s" : "Ouvrir Booster"}
     </button>
-    <div id="pack"></div>
+
+    <div id="cardDisplay"></div>
   `;
 
-  document.getElementById("openBtn").onclick = () => {
-    if (cooldown > 0) return;
-
-    const pack = openPack();
-    let i = 0;
-
-    const packDiv = document.getElementById("pack");
-
-    function showCard() {
-      const c = pack[i];
-
-      packDiv.innerHTML = `
-        <div class="card">
-          <h3>${c.name}</h3>
-          <p>Rarity ${c.rarity}</p>
-          <p>Tap pour suivante</p>
-        </div>
-      `;
-
-      i++;
-    }
-
-    showCard();
-
-    packDiv.onclick = () => {
-      if (i < pack.length) showCard();
-    };
-
-    cooldown = 20;
-
-    const t = setInterval(() => {
-      cooldown--;
-      renderBooster();
-      if (cooldown <= 0) clearInterval(t);
-    }, 1000);
-  };
+  document.getElementById("openBtn").onclick = openBooster;
 }
 
-// --------------------
-// COLLECTION TAB
-// --------------------
+// ========================
+// OPEN BOOSTER FLOW
+// ========================
+function openBooster() {
+  if (cooldown > 0) return;
+
+  currentPack = openPack();
+  index = 0;
+
+  showCard();
+
+  const display = document.getElementById("cardDisplay");
+
+  display.onclick = () => {
+    index++;
+
+    if (index < currentPack.length) {
+      showCard();
+    } else {
+      display.innerHTML = `<p>Pack terminé 🎉</p>`;
+    }
+  };
+
+  startCooldown();
+}
+
+// ========================
+// SHOW CARD (1 PAR 1)
+// ========================
+function showCard() {
+  const display = document.getElementById("cardDisplay");
+  const c = currentPack[index];
+
+  display.innerHTML = `
+    <div class="card">
+      <h2>${c.name}</h2>
+      <p>Rarity: ${c.rarity}</p>
+      <p>${index + 1} / 5</p>
+      <p>Tap pour suivante →</p>
+    </div>
+  `;
+}
+
+// ========================
+// COOLDOWN
+// ========================
+function startCooldown() {
+  cooldown = 20;
+
+  if (interval) clearInterval(interval);
+
+  interval = setInterval(() => {
+    cooldown--;
+
+    renderBooster();
+
+    if (cooldown <= 0) {
+      clearInterval(interval);
+    }
+  }, 1000);
+}
+
+// ========================
+// COLLECTION
+// ========================
 function renderCollection() {
   const el = document.getElementById("collection");
   const owned = getCollection();
+  const all = baseCards;
 
   el.innerHTML = "<h2>Collection</h2>";
 
-  baseCards.forEach(c => {
+  all.forEach(c => {
     const found = owned.find(x => x.id === c.id);
 
     el.innerHTML += `
-      <div class="card ${found ? "" : "locked"}">
+      <div class="card">
         <h3>${found ? c.name : "???"}</h3>
         <p>${found ? "Obtenu" : "Locked"}</p>
       </div>
@@ -140,28 +189,61 @@ function renderCollection() {
   });
 }
 
-// --------------------
-// ADMIN TAB
-// --------------------
+// ========================
+// ADMIN
+// ========================
 function renderAdmin() {
   const el = document.getElementById("admin");
+  const adminCards = getAdminCards();
 
   el.innerHTML = `
     <h2>Admin</h2>
-    <p>(simple demo)</p>
-    <input id="name" placeholder="Nom carte"/>
-    <input id="rarity" type="number" min="1" max="6"/>
-    <button onclick="addCard()">Ajouter</button>
+
+    <input id="cardName" placeholder="Nom carte" />
+    <input id="cardRarity" type="number" min="1" max="6" placeholder="Rareté" />
+
+    <button onclick="addCard()">Ajouter carte</button>
+
+    <h3>Cartes admin</h3>
+    <div id="adminList"></div>
   `;
+
+  const list = document.getElementById("adminList");
+
+  adminCards.forEach(c => {
+    list.innerHTML += `
+      <div class="card">
+        <b>${c.name}</b> (R${c.rarity})
+      </div>
+    `;
+  });
 }
 
 function addCard() {
-  alert("Version simple: admin non persisté (on peut upgrader après)");
+  const name = document.getElementById("cardName").value;
+  const rarity = Number(document.getElementById("cardRarity").value);
+
+  if (!name || !rarity) return;
+
+  const adminCards = getAdminCards();
+
+  const newCard = {
+    id: Date.now(),
+    name,
+    rarity
+  };
+
+  localStorage.setItem(
+    "adminCards",
+    JSON.stringify([...adminCards, newCard])
+  );
+
+  renderAdmin();
 }
 
-// --------------------
+// ========================
 // TABS
-// --------------------
+// ========================
 function showTab(tab) {
   document.querySelectorAll(".tab").forEach(t => t.classList.add("hidden"));
   document.getElementById(tab).classList.remove("hidden");
@@ -171,5 +253,7 @@ function showTab(tab) {
   if (tab === "admin") renderAdmin();
 }
 
+// ========================
 // INIT
+// ========================
 showTab("booster");
